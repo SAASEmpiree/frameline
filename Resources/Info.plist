@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Easy Screen</string>
+    <key>CFBundleDisplayName</key>
+    <string>Easy Screen</string>
+    <key>CFBundleExecutable</key>
+    <string>EasyScreen</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.saasempiree.easyscreen</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <!-- macOS 26 (Tahoe) : on refuse le nouveau design « Liquid Glass » (sidebar flottante en
+         retrait, conteneurs en verre sur les boutons de toolbar) pour garder une disposition
+         classique à 2 panneaux à fond perdu — exactement comme la référence. -->
+    <key>UIDesignRequiresCompatibility</key>
+    <true/>
+    <key>NSScreenRecordingUsageDescription</key>
+    <string>Easy Screen capture votre écran pour créer des captures d'écran et des enregistrements.</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>© 2026 SAAS Empire. Tous droits réservés.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>CFBundleURLName</key>
+            <string>com.saasempiree.easyscreen.url</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>easyscreen</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
