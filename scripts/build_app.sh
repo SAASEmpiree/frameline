@@ -1,17 +1,17 @@
 #!/bin/bash
-# build_app.sh — compile Easy Screen (SPM), assemble le bundle .app, génère l'icône,
+# build_app.sh — compile FrameLine (SPM), assemble le bundle .app, génère l'icône,
 # signe en ad-hoc, et (option --install) installe dans /Applications/My App/.
 #
 # Usage:
-#   ./scripts/build_app.sh            # build vers ./build/Easy Screen.app
+#   ./scripts/build_app.sh            # build vers ./build/FrameLine.app
 #   ./scripts/build_app.sh --install  # build puis installe dans /Applications/My App/
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="Easy Screen"
-EXEC_NAME="EasyScreen"
+APP_NAME="FrameLine"
+EXEC_NAME="FrameLine"
 STAGE="$ROOT/build/$APP_NAME.app"
 INSTALL_DIR="/Applications/My App"
 INSTALL_APP="$INSTALL_DIR/$APP_NAME.app"
@@ -72,8 +72,12 @@ if [ "$SIGN_ID" = "-" ] && [ "${REQUIRE_STABLE_SIGNING:-0}" = "1" ]; then
     exit 1
 fi
 # Single binary, aucun framework embarqué → pas de --deep.
-codesign --force --sign "$SIGN_ID" "$STAGE"
-codesign --verify --strict "$STAGE" && echo "  · signature OK"
+# [SEC] --options runtime : active le HARDENED RUNTIME. AMFI ignore alors DYLD_INSERT_LIBRARIES
+# et la validation de bibliothèque rejette toute dylib étrangère → ferme l'injection de code
+# dans ce process (qui détient les permissions TCC Écran/Micro) et donc le contournement TCC.
+# Fonctionne même en signature ad-hoc/locale (binaire unique, aucune dylib tierce à charger).
+codesign --force --options runtime --sign "$SIGN_ID" "$STAGE"
+codesign --verify --strict "$STAGE" && echo "  · signature OK (hardened runtime)"
 
 if [ "${1:-}" == "--install" ]; then
     echo "▸ [5/6] Installation dans ${INSTALL_DIR} …"
@@ -83,8 +87,8 @@ if [ "${1:-}" == "--install" ]; then
     sleep 0.5
     rm -rf "$INSTALL_APP"
     cp -R "$STAGE" "$INSTALL_APP"
-    # Re-signer après copie (le chemin change) avec la MÊME identité que le stage.
-    codesign --force --sign "$SIGN_ID" "$INSTALL_APP" >/dev/null 2>&1 || true
+    # Re-signer après copie (le chemin change) avec la MÊME identité + hardened runtime.
+    codesign --force --options runtime --sign "$SIGN_ID" "$INSTALL_APP" >/dev/null 2>&1 || true
     # Rafraîchir le cache Launch Services
     /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \
         -f "$INSTALL_APP" 2>/dev/null || true

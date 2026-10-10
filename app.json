@@ -1,0 +1,12 @@
+{
+  "name": "FrameLine",
+  "slug": "frameline",
+  "bundleId": "com.saasempiree.frameline",
+  "tagline": "Screenshots, screen recordings, annotation and OCR from your menu bar, 100% local.",
+  "platforms": ["macos"],
+  "stack": "swift",
+  "build": "./scripts/build_app.sh",
+  "artifact": "build/FrameLine.app",
+  "install": "./scripts/build_app.sh --install",
+  "update": "brew"
+}

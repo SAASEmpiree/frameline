@@ -1,12 +1,10 @@
-# Swift Package Manager build artifacts
+# Swift Package Manager / build outputs (scripts/build_app.sh)
 .build/
 build/
 DerivedData/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
-
-# macOS
-.DS_Store
+*.swiftpm
 
 # App bundle output
 *.app
@@ -14,6 +12,19 @@ DerivedData/
 # Generated icon staging
 *.iconset
 
-# Misc
-*.swiftpm
+# Backups
+*.bak
+icon.*.bak
+
+# Tool caches
+.impeccable/
+
+# Secrets (never commit)
+.env*
+*private_key*
+*.p12
+*.pem
 .netrc
+
+# macOS
+.DS_Store

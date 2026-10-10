@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- FrameLine — logo #1 « coins de cadrage » : 4 crochets en L blancs + point rouge d'enregistrement.
+       Master 1024×1024 (grille 120 de référence × 8.5333). Squircle graphite plein cadre, rayon 22,5 %. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2C2C2E"/>
+      <stop offset="1" stop-color="#161618"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230.4" ry="230.4" fill="url(#bg)"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="59.73" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M341.33 273.07 H273.07 V341.33"/>
+    <path d="M682.67 273.07 H750.93 V341.33"/>
+    <path d="M341.33 750.93 H273.07 V682.67"/>
+    <path d="M682.67 750.93 H750.93 V682.67"/>
+  </g>
+  <circle cx="512" cy="512" r="76.8" fill="#FF453A"/>
+</svg>

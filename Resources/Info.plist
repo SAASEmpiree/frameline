@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Easy Screen</string>
+    <string>FrameLine</string>
     <key>CFBundleDisplayName</key>
-    <string>Easy Screen</string>
+    <string>FrameLine</string>
     <key>CFBundleExecutable</key>
-    <string>EasyScreen</string>
+    <string>FrameLine</string>
     <key>CFBundleIdentifier</key>
-    <string>com.saasempiree.easyscreen</string>
+    <string>com.saasempiree.frameline</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0</string>
     <key>CFBundleVersion</key>
@@ -24,17 +24,19 @@
     <string>14.0</string>
     <key>LSUIElement</key>
     <true/>
+    <!-- Désactive le design « Liquid Glass » de macOS 26 (Tahoe) : sinon le système pose une plaque
+         de verre arrondie derrière l'espaceur de la barre d'outils (la « case » vide grise). Sans le
+         verre Tahoe, la barre redevient plate (look BridgeShot) et les icônes gardent leur position. -->
+    <key>UIDesignRequiresCompatibility</key>
+    <true/>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSHighResolutionCapable</key>
     <true/>
-    <!-- macOS 26 (Tahoe) : on refuse le nouveau design « Liquid Glass » (sidebar flottante en
-         retrait, conteneurs en verre sur les boutons de toolbar) pour garder une disposition
-         classique à 2 panneaux à fond perdu — exactement comme la référence. -->
-    <key>UIDesignRequiresCompatibility</key>
-    <true/>
     <key>NSScreenRecordingUsageDescription</key>
-    <string>Easy Screen capture votre écran pour créer des captures d'écran et des enregistrements.</string>
+    <string>FrameLine capture votre écran pour créer des captures d'écran et des enregistrements.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>FrameLine enregistre le microphone pour ajouter votre voix aux enregistrements d'écran.</string>
     <key>NSHumanReadableCopyright</key>
     <string>© 2026 SAAS Empire. Tous droits réservés.</string>
     <key>CFBundleURLTypes</key>
@@ -43,10 +45,10 @@
             <key>CFBundleTypeRole</key>
             <string>Viewer</string>
             <key>CFBundleURLName</key>
-            <string>com.saasempiree.easyscreen.url</string>
+            <string>com.saasempiree.frameline.url</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>easyscreen</string>
+                <string>frameline</string>
             </array>
         </dict>
     </array>
