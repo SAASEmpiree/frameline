@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./scripts/build_app.sh            # build vers ./build/FrameLine.app
-#   ./scripts/build_app.sh --install  # build puis installe dans /Applications/My App/
+#   ./scripts/build_app.sh --install  # build puis installe dans /Applications/My App/, puis sync GitHub (tag, release, cask)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -94,6 +94,8 @@ if [ "${1:-}" == "--install" ]; then
         -f "$INSTALL_APP" 2>/dev/null || true
     echo "  · installé: $INSTALL_APP"
     echo "▸ [6/6] Terminé. Lance l'app: open \"$INSTALL_APP\""
+    # Publier ce qui est installé : main + tag, release du tap, cask (Règle 3 de @START APP)
+    "$HOME/Documents/SAASEmpiree/homebrew-tap/tools/sync-after-install" "$0" || echo "⚠ sync-after-install failed: run ~/Documents/SAASEmpiree/homebrew-tap/tools/audit" >&2
 else
     echo "▸ [5/6] (pas d'install — utilise --install pour déployer)"
     echo "▸ [6/6] Terminé. Bundle de test: $STAGE"
