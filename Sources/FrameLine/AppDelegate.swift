@@ -30,6 +30,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppCoordinator.shared.onOpenPreferences = { [weak self] in self?.showPreferences() }
         AppCoordinator.shared.onAnnotate = { url in PreviewWindowController.show(imageURL: url) }
 
+        // Serveur MCP local (127.0.0.1 + jeton) : Coucou, Claude Code, Cursor… pilotent FrameLine.
+        MCPController.shared.startIfEnabled()
+
         // Premier lancement → tutoriel. Sinon : démarrage SILENCIEUX en .accessory (agent menubar),
         // AUCUNE fenêtre ouverte, AUCUN focus volé — exactement comme BridgeShot. Ouvrir la galerie
         // ici la faisait passer en .regular + NSApp.activate(ignoringOtherApps:true) → l'app volait le
@@ -62,6 +65,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
               !CaptureWindowOverlayController.shared.isPresenting else { return true }
         MainWindowController.shared.show()
         return true
+    }
+
+    /// Quitter : le serveur MCP cesse d'écouter et son fichier de découverte disparaît.
+    func applicationWillTerminate(_ notification: Notification) {
+        MCPController.shared.shutdown()
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool { true }

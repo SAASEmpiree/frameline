@@ -175,6 +175,15 @@ final class AppCoordinator: ObservableObject {
         if Preferences.shared.openEditor { onAnnotate?(url) }                       // « ouvrir l'éditeur après capture »
     }
 
+    /// Routage d'une capture déclenchée par un client MCP : galerie + vignette flottante (selon
+    /// « aperçu rapide »), mais JAMAIS l'éditeur automatique (l'outil open_in_editor existe pour ça).
+    func routeAutomationCapture(_ url: URL) {
+        library.add(url)
+        if Preferences.shared.showPreview, let img = NSImage(contentsOf: url) {
+            CaptureThumbnailController.shared.present(image: img, fileURL: url)
+        }
+    }
+
     // MARK: - Actions sur une capture (menu contextuel, vignette, barre d'actions)
 
     /// Ouvre l'éditeur d'annotation (câblé sur PreviewWindowController via onAnnotate).

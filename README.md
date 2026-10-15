@@ -29,6 +29,7 @@ FrameLine takes screenshots and records your screen from the menu bar. Press a s
 - 🗂️ **History & library** — recent captures in a floating panel, every capture in one window.
 - ⌨️ **Global shortcuts** — **⇧⌘4** area, **⇧⌘8** window, **⇧⌘9** full screen, **⇧⌘E** record (physical keys, so they work on AZERTY too).
 - 🗣️ **UI in 10 languages** — switch the display language live; light, dark or system theme.
+- 🤖 **Local MCP server** — Claude Code, Cursor or Coucou can take screenshots, record the screen and read your captures (127.0.0.1 only, secret token, can be turned off in Settings).
 - 🔔 **Capture sounds**, PNG or JPG output, copy-to-clipboard and open-in-editor after capture, launch at login.
 
 ## 📦 Install

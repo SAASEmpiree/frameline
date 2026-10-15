@@ -25,6 +25,7 @@ final class Preferences {
         static let closePreviewAfterDrag = "closePreviewAfterDrag" // fermer la vignette après un glisser-déposer réussi
         static let captureSoundName = "captureSoundName"           // son du déclic de capture ("default" = fichier embarqué)
         static let recordSoundName = "recordSoundName"             // son de démarrage d'enregistrement ("default" = Tink)
+        static let mcpServerEnabled = "mcpServerEnabled"           // serveur MCP local (127.0.0.1) actif
     }
 
     private init() {
@@ -46,6 +47,7 @@ final class Preferences {
             K.closePreviewAfterDrag: false,
             K.captureSoundName: "default",
             K.recordSoundName: "default",
+            K.mcpServerEnabled: true,
         ])
     }
 
@@ -78,6 +80,8 @@ final class Preferences {
     var captureSoundName: String { get { d.string(forKey: K.captureSoundName) ?? "default" } set { d.set(newValue, forKey: K.captureSoundName) } }
     /// Son de démarrage d'enregistrement : "default" (Tink) ou un nom de son système macOS (Morse, Sosumi…).
     var recordSoundName: String { get { d.string(forKey: K.recordSoundName) ?? "default" } set { d.set(newValue, forKey: K.recordSoundName) } }
+    /// Serveur MCP local (127.0.0.1, jeton Bearer) qui laisse les clients IA du Mac piloter FrameLine.
+    var mcpServerEnabled: Bool { get { d.bool(forKey: K.mcpServerEnabled) } set { d.set(newValue, forKey: K.mcpServerEnabled) } }
     var onboardingCompleted: Bool { get { d.bool(forKey: "onboardingCompleted") } set { d.set(newValue, forKey: "onboardingCompleted") } }
     var theme: String { get { d.string(forKey: "theme") ?? "dark" } set { d.set(newValue, forKey: "theme") } }  // system | light | dark
     var openEditor: Bool { get { d.bool(forKey: "openEditor") } set { d.set(newValue, forKey: "openEditor") } }

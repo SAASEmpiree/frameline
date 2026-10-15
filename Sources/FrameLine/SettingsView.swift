@@ -67,12 +67,65 @@ private struct GeneralPane: View {
             Section(i18n.t("sec_startup")) {
                 Toggle(i18n.t("launch_at_login"), isOn: $launchAtLogin)
             }
+
+            MCPServerSection()
         }
         .formStyle(.grouped)
         .onChange(of: theme) { ThemeManager.apply() }
         .onChange(of: launchAtLogin) {
             Preferences.shared.launchAtLogin = launchAtLogin
             launchAtLogin = Preferences.shared.launchAtLogin       // reflète l'état réel (approbation possible)
+        }
+    }
+}
+
+// MARK: - Serveur MCP (local)
+
+/// Interrupteur, état, copie de la config (avec jeton) et régénération du jeton du serveur MCP local.
+private struct MCPServerSection: View {
+    @EnvironmentObject private var i18n: I18n
+    @ObservedObject private var mcp = MCPController.shared
+    @AppStorage("mcpServerEnabled") private var enabled = true
+
+    private var statusText: String {
+        switch mcp.status {
+        case .stopped: return i18n.t("mcp_status_stopped")
+        case .starting: return i18n.t("mcp_status_starting")
+        case .running(let port): return String(format: i18n.t("mcp_status_running"), "127.0.0.1:\(port)")
+        case .failed(let reason): return String(format: i18n.t("mcp_status_failed"), reason)
+        }
+    }
+
+    private var statusColor: Color {
+        switch mcp.status {
+        case .running: return .green
+        case .failed: return .red
+        default: return .secondary
+        }
+    }
+
+    private var isRunning: Bool { if case .running = mcp.status { return true }; return false }
+
+    var body: some View {
+        Section {
+            Toggle(i18n.t("mcp_enable"), isOn: $enabled)
+                .onChange(of: enabled) { MCPController.shared.setEnabled(enabled) }
+            LabeledContent(i18n.t("mcp_status")) {
+                HStack(spacing: 6) {
+                    Circle().fill(statusColor).frame(width: 7, height: 7)
+                    Text(statusText).foregroundStyle(.secondary).lineLimit(2)
+                }
+            }
+            HStack {
+                Button(i18n.t("mcp_copy_config")) { MCPController.shared.copyClientConfig() }
+                    .disabled(!isRunning)
+                Button(i18n.t("mcp_regenerate")) { MCPController.shared.regenerateToken() }
+                    .disabled(!isRunning)
+            }
+        } header: {
+            Text(i18n.t("sec_mcp"))
+        } footer: {
+            Text(i18n.t("mcp_footer")).font(.footnote).foregroundStyle(.secondary)
         }
     }
 }

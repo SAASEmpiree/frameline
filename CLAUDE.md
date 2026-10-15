@@ -23,3 +23,17 @@ Installing runs `~/Documents/SAASEmpiree/homebrew-tap/tools/sync-after-install`,
 
 - `app.json` is the manifest that tool reads (build command, artifact, update channel `brew`).
 - The version is always read from the built `.app` (`CFBundleShortVersionString`), never from `app.json`.
+
+## Local MCP server
+
+`Sources/FrameLine/MCP/`: Streamable HTTP MCP on `127.0.0.1:<free port>/mcp`, Bearer token (256-bit,
+new at every launch), Host/Origin limited to loopback, no third-party dependency (Network.framework).
+Discovery file `~/Library/Application Support/FrameLine/mcp.json` (0600, dir 0700, removed on quit),
+read by Coucou. Toggle in Settings > General > "Serveur MCP (local)" (default on).
+
+- Core (Foundation/Network only): `MCPJSONRPC`, `MCPHTTP`, `MCPServer`, `MCPDiscovery`, `FrameLineMCPCatalog`
+  (tool names, schemas, annotations). App glue: `FrameLineMCPTools` (handlers), `MCPController` (lifecycle).
+- Tests: `./scripts/test-mcp.sh` (unit + real loopback listener). Against the running app:
+  `./scripts/mcp-smoke.sh` (read-only).
+- Build gotcha (Command Line Tools only): the default macOS 27 SDK lacks the SwiftUI macro plugin
+  (`@State` fails to expand). Build with `SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk ./scripts/build_app.sh`.

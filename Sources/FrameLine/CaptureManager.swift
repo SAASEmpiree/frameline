@@ -216,6 +216,27 @@ final class CaptureManager {
         }
     }
 
+    /// Capture NON interactive pilotée par un client MCP (FrameLineMCPTools) : `modeArgs` = arguments de
+    /// screencapture propres au mode (-D n / -l id / -R x,y,w,h). Toujours vers un FICHIER (la préférence
+    /// « copier au presse-papiers » est ignorée : l'appelant a besoin d'un chemin), même son, même
+    /// notification, même retrait de la pile de vignettes que les captures manuelles. L'autorisation est
+    /// vérifiée par l'appelant (aucune alerte modale ici). `completion(nil)` = échec, sur le main.
+    func captureForAutomation(modeArgs: [String], completion: @escaping (URL?) -> Void) {
+        let ext = Preferences.shared.imageFormat == "jpg" ? "jpg" : "png"
+        let tmp = Self.temporaryCaptureURL(ext: ext)
+        let args = ["-x", "-t", ext] + modeArgs + [tmp.path]
+        let hidThumbnails = beginThumbnailSession()
+        DispatchQueue.main.asyncAfter(deadline: .now() + (hidThumbnails ? 0.08 : 0.0)) {
+            self.run(args) { _ in
+                self.finishCapture(tmp: tmp, ext: ext, toClipboard: false,
+                                   reportMissingFile: true, completion: completion)
+            }
+        }
+    }
+
+    /// Index `-D` de l'écran sous le curseur (public pour l'outil MCP take_screenshot).
+    func displayIndexUnderCursor() -> Int? { Self.screencaptureDisplayIndex(forScreenAt: NSEvent.mouseLocation) }
+
     private func run(_ args: [String], done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             let p = Process()

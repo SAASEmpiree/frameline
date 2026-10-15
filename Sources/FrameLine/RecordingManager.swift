@@ -18,6 +18,8 @@ final class RecordingManager: NSObject {
     private(set) var currentURL: URL?
     private var _recording = false
     var isRecording: Bool { _recording }
+    /// Démarrage en cours (bip + préparation SCK) : utilisé par l'outil MCP start_recording pour attendre.
+    var isStarting: Bool { starting }
     private var finalizing = false                 // anti double-finalisation
     // Sur le chemin SCK (macOS 15+), `_recording` ne passe à vrai qu'APRÈS ~1 s (son de démarrage +
     // startCapture). Ce drapeau, posé SYNCHRONEMENT sur le main actor avant tout `await`, ferme la
@@ -68,6 +70,16 @@ final class RecordingManager: NSObject {
         } else {
             startLegacy(["-v", "-k", "-i"])
         }
+    }
+
+    /// Enregistrement d'une ZONE donnée (rect Cocoa global, origine bas-gauche) sans sélection
+    /// interactive — utilisé par l'outil MCP start_recording. macOS 15+ (chemin SCK) uniquement.
+    /// L'autorisation est vérifiée par l'appelant.
+    @discardableResult
+    func startRegion(rect: NSRect) -> Bool {
+        guard !isRecording, !starting else { return false }
+        if #available(macOS 15.0, *) { startSCK(rect: rect); return true }
+        return false
     }
 
     func stop() {
