@@ -2,55 +2,52 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key>
-    <string>FrameLine</string>
-    <key>CFBundleDisplayName</key>
-    <string>FrameLine</string>
-    <key>CFBundleExecutable</key>
-    <string>FrameLine</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.saasempiree.frameline</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>14.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <!-- Désactive le design « Liquid Glass » de macOS 26 (Tahoe) : sinon le système pose une plaque
-         de verre arrondie derrière l'espaceur de la barre d'outils (la « case » vide grise). Sans le
-         verre Tahoe, la barre redevient plate (look BridgeShot) et les icônes gardent leur position. -->
-    <key>UIDesignRequiresCompatibility</key>
-    <true/>
-    <key>NSPrincipalClass</key>
-    <string>NSApplication</string>
-    <key>NSHighResolutionCapable</key>
-    <true/>
-    <key>NSScreenRecordingUsageDescription</key>
-    <string>FrameLine capture votre écran pour créer des captures d'écran et des enregistrements.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>FrameLine enregistre le microphone pour ajouter votre voix aux enregistrements d'écran.</string>
-    <key>NSHumanReadableCopyright</key>
-    <string>© 2026 SAAS Empire. Tous droits réservés.</string>
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Viewer</string>
-            <key>CFBundleURLName</key>
-            <string>com.saasempiree.frameline.url</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>frameline</string>
-            </array>
-        </dict>
-    </array>
+	<key>CFBundleDisplayName</key>
+	<string>FrameLine</string>
+	<key>CFBundleExecutable</key>
+	<string>FrameLine</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.saasempiree.frameline</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>FrameLine</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.1</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.saasempiree.frameline.url</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>frameline</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>2</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 SAAS Empire. Tous droits réservés.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>FrameLine enregistre le microphone pour ajouter votre voix aux enregistrements d'écran.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSScreenRecordingUsageDescription</key>
+	<string>FrameLine capture votre écran pour créer des captures d'écran et des enregistrements.</string>
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 </dict>
 </plist>
