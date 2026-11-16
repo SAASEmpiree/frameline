@@ -14,7 +14,9 @@
 
   <a href="https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-macOS.zip"><img src="https://img.shields.io/badge/Download%20for%20macOS-FrameLine-ff3b30?style=for-the-badge&logo=apple&logoColor=white" alt="Download FrameLine for macOS" /></a>
 
-  <sub>macOS 14+ · Apple Silicon · <a href="https://github.com/SAASEmpiree/frameline/releases">all versions</a></sub>
+  <a href="https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-Windows.zip"><img src="https://img.shields.io/badge/Download%20for%20Windows-FrameLine-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download FrameLine for Windows" /></a>
+
+  <sub>macOS 14+ · Apple Silicon &nbsp;|&nbsp; Windows 10 (2004+) / 11 · x64 · beta &nbsp;|&nbsp; <a href="https://github.com/SAASEmpiree/frameline/releases">all versions</a></sub>
 </div>
 
 ---
@@ -46,7 +48,7 @@ FrameLine takes screenshots and records your screen from the menu bar. Press a s
 2. Unzip it and drag **FrameLine.app** into your **Applications** folder.
 3. Open it. FrameLine is not notarized yet, so the first time macOS blocks it: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to FrameLine (only once). Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/FrameLine.app`.
 
-**With Homebrew:**
+**With Homebrew (macOS):**
 
 ```sh
 brew install --cask saasempiree/tap/frameline
@@ -54,9 +56,20 @@ brew install --cask saasempiree/tap/frameline
 
 A **FrameLine icon** appears in the menu bar and the setup guide walks you through **Screen Recording** permission; **Microphone** is only asked if you record your voice. Requires **macOS 14+** on Apple Silicon.
 
+### 🪟 Windows (beta)
+
+The same app for Windows 10 (version 2004 or later) and Windows 11, x64. Shortcuts are **Ctrl+Shift+4** area, **Ctrl+Shift+8** window, **Ctrl+Shift+9** full screen, **Ctrl+Shift+E** record; FrameLine lives in the notification area (system tray).
+
+1. Download [**FrameLine-Windows.zip**](https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-Windows.zip) (always the latest version).
+2. Right-click the zip → **Extract All**, then open the **FrameLine** folder and run **FrameLine.exe**. Keep the files of that folder together.
+3. FrameLine is not code-signed yet: if Windows SmartScreen says "Windows protected your PC", click **More info** → **Run anyway** (only once).
+4. Screen recording needs the [Microsoft Visual C++ 2015-2022 x64 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe), already present on most PCs.
+
+The Windows version is a beta: it is built from the same feature set, but has had less real-world testing than the Mac app. Captures go to `Pictures\FrameLine`, settings to `%APPDATA%\FrameLine`.
+
 ## 🔄 Updates
 
-FrameLine has no built-in updater. Installed from the zip? Download it again with the button above and replace the app. Installed with Homebrew?
+FrameLine has no built-in updater. Installed from a zip (Mac or Windows)? Download it again with the button above and replace the app. Installed with Homebrew?
 
 ```sh
 brew upgrade --cask frameline
@@ -96,7 +109,7 @@ app.json                  # manifest read by the tap's ship tool
 
 ## 🚢 Release
 
-Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>`, publishes the build on the tap and attaches the same zip as `FrameLine-macOS.zip` to this repo's latest release (the download button above). See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
+Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>`, publishes the build on the tap and attaches the same zip as `FrameLine-macOS.zip` to this repo's latest release (the download button above). The Windows build (`FrameLine-Windows.zip`) is carried over to each new release until a newer Windows build replaces it. See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
 
 ## 📄 License
 
