@@ -21,7 +21,7 @@ Concurrent agents must never share `obj/`: always pass your own artifacts path.
     dotnet build src/FrameLine -c Release -p:Platform=x64 --artifacts-path /tmp/fl-art-<you>
     dotnet test tests/FrameLine.Core.Tests --artifacts-path /tmp/fl-art-<you>-t
 
-Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine.exe` + zip for Scoop).
+Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine/FrameLine.exe`, with the mixed-mode `ScreenRecorderLib.dll` kept beside it, + `dist/FrameLine-<version>-win-x64.zip` for Scoop).
 
 ## macOS → Windows mapping (decided, do not re-litigate)
 

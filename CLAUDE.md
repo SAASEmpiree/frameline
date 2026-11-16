@@ -5,4 +5,4 @@ Read `docs/ARCHITECTURE.md` first: stack, macOS→Windows mapping, module owners
 
 - Build from macOS: `dotnet build src/FrameLine -c Release -p:Platform=x64` (needs `EnableWindowsTargeting`, already set). The app cannot run on macOS.
 - Tests (Core only, any OS): `dotnet test tests/FrameLine.Core.Tests`.
-- Release: `scripts/publish.sh` → `dist/FrameLine.exe` (self-contained single file) + zip.
+- Release: `scripts/publish.sh` → `dist/FrameLine/FrameLine.exe` (self-contained single file, `ScreenRecorderLib.dll` beside it) + `dist/FrameLine-<version>-win-x64.zip`.
