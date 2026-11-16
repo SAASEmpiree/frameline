@@ -9,6 +9,12 @@
   [![Version](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FSAASEmpiree%2Fhomebrew-tap%2Fmain%2FCasks%2Fframeline.rb&search=version%20%22(%5B%5E%22%5D%2B)%22&replace=%241&label=version&color=ff3b30&style=flat-square)](https://github.com/SAASEmpiree/homebrew-tap#frameline)
   [![Swift](https://img.shields.io/badge/-Swift%20%C2%B7%20AppKit-FA7343?style=flat-square&logo=swift&logoColor=white)](#-build-from-source)
   [![Local](https://img.shields.io/badge/local-100%25-2fd389?style=flat-square)](#-what-it-does)
+
+  <br />
+
+  <a href="https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-macOS.zip"><img src="https://img.shields.io/badge/Download%20for%20macOS-FrameLine-ff3b30?style=for-the-badge&logo=apple&logoColor=white" alt="Download FrameLine for macOS" /></a>
+
+  <sub>macOS 14+ · Apple Silicon · <a href="https://github.com/SAASEmpiree/frameline/releases">all versions</a></sub>
 </div>
 
 ---
@@ -34,15 +40,23 @@ FrameLine takes screenshots and records your screen from the menu bar. Press a s
 
 ## 📦 Install
 
+**Direct download (easiest):**
+
+1. Download [**FrameLine-macOS.zip**](https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-macOS.zip) (always the latest version).
+2. Unzip it and drag **FrameLine.app** into your **Applications** folder.
+3. Open it. FrameLine is not notarized yet, so the first time macOS blocks it: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to FrameLine (only once). Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/FrameLine.app`.
+
+**With Homebrew:**
+
 ```sh
 brew install --cask saasempiree/tap/frameline
 ```
 
-A **FrameLine icon** appears in the menu bar and the setup guide walks you through **Screen Recording** permission; **Microphone** is only asked if you record your voice. Requires **macOS 14+**.
+A **FrameLine icon** appears in the menu bar and the setup guide walks you through **Screen Recording** permission; **Microphone** is only asked if you record your voice. Requires **macOS 14+** on Apple Silicon.
 
 ## 🔄 Updates
 
-FrameLine has no built-in updater: update it with Homebrew.
+FrameLine has no built-in updater. Installed from the zip? Download it again with the button above and replace the app. Installed with Homebrew?
 
 ```sh
 brew upgrade --cask frameline
@@ -70,9 +84,11 @@ Sources/FrameLine/        # the app: AppKit + SwiftUI, ~10k lines
   PreviewWindowController #   annotation editor
   VideoTrimmer.swift      #   recording trimmer
   TextRecognizer.swift    #   OCR (Vision)
+  MCP/                    #   local MCP server (127.0.0.1, Bearer token)
   Strings.swift / I18n    #   UI strings × 10 languages
 Resources/                # Info.plist, AppIcon-1024.png, capture sound
-scripts/                  # build_app.sh, setup_signing.sh, make_icon.swift
+scripts/                  # build_app.sh, setup_signing.sh, make_icon.swift, test-mcp.sh, mcp-smoke.sh
+tests/                    # MCP unit and loopback integration tests
 frameline-logo/           # logo set: png, icns, svg, menu-bar templates
 BRIDGESHOT_PARITY.md      # feature parity backlog
 app.json                  # manifest read by the tap's ship tool
@@ -80,7 +96,7 @@ app.json                  # manifest read by the tap's ship tool
 
 ## 🚢 Release
 
-Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>` and publishes the build. See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
+Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>`, publishes the build on the tap and attaches the same zip as `FrameLine-macOS.zip` to this repo's latest release (the download button above). See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
 
 ## 📄 License
 

@@ -19,7 +19,7 @@ re-signs and refreshes Launch Services.
 
 ## Release & sync
 
-Installing runs `~/Documents/SAASEmpiree/homebrew-tap/tools/sync-after-install`, which pushes main + tag and publishes the release; see the tap's tools/README.
+Installing runs `~/Documents/SAASEmpiree/homebrew-tap/tools/sync-after-install`, which pushes main + tag and publishes the release; with `directDownload` in `app.json` it also attaches the zip as `FrameLine-macOS.zip` to this repo's latest release (README download button). See the tap's tools/README.
 
 - `app.json` is the manifest that tool reads (build command, artifact, update channel `brew`).
 - The version is always read from the built `.app` (`CFBundleShortVersionString`), never from `app.json`.

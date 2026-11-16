@@ -8,5 +8,6 @@
   "build": "./scripts/build_app.sh",
   "artifact": "build/FrameLine.app",
   "install": "./scripts/build_app.sh --install",
-  "update": "brew"
+  "update": "brew",
+  "directDownload": { "asset": "FrameLine-macOS.zip" }
 }
