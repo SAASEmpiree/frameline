@@ -1,0 +1,8 @@
+# FrameLine for Windows
+
+Windows port of FrameLine (macOS, Swift, `~/Documents/SAASEmpiree/FrameLine`). C# .NET 8 + WPF.
+Read `docs/ARCHITECTURE.md` first: stack, macOS→Windows mapping, module owners, build commands.
+
+- Build from macOS: `dotnet build src/FrameLine -c Release -p:Platform=x64` (needs `EnableWindowsTargeting`, already set). The app cannot run on macOS.
+- Tests (Core only, any OS): `dotnet test tests/FrameLine.Core.Tests`.
+- Release: `scripts/publish.sh` → `dist/FrameLine.exe` (self-contained single file) + zip.
