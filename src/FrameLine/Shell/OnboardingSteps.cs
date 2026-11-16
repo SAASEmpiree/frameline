@@ -126,8 +126,10 @@ internal sealed class OnboardingSteps
     {
         var s = Stack(18);
         s.Children.Add(IconTile("\uE765"));
+        // The macOS copy also says "Change them anytime in Settings → Hotkeys", but neither app has
+        // that tab and the shortcuts are fixed, so the sentence is dropped rather than ported.
         s.Children.Add(Heading("Set up your shortcuts",
-            "FrameLine answers the classic screenshot keys out of the box. Change them anytime in Settings → Hotkeys."));
+            "FrameLine answers the classic screenshot keys out of the box."));
         var rows = Stack(12);
         rows.Margin = new Thickness(0, 2, 0, 0);
         rows.Children.Add(ShortcutRow("\uE7A8", "Capture Area", CaptureHotkey.Region));

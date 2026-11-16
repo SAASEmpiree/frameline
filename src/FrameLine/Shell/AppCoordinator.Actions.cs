@@ -18,8 +18,9 @@ public sealed partial class AppCoordinator
 {
     // MARK: - Pin from clipboard
 
-    /// "Pin Image from Clipboard": the clipboard image is written to a temporary PNG and floats
-    /// above everything. No image → a discreet warning.
+    /// "Pin Image from Clipboard": the clipboard image floats above everything. No image → a
+    /// discreet warning. macOS goes through a temp PNG that its temp dir purges; %TEMP% is never
+    /// purged, so the image is pinned from memory instead of leaking a file per pin.
     private void PinFromClipboardCore()
     {
         var image = ClipboardImage.ReadImage();
@@ -28,14 +29,10 @@ public sealed partial class AppCoordinator
             GlassConfirmBadge.Show(Tr.L("toast_no_clipboard_image", "No image in clipboard"), "exclamationmark.triangle.fill");
             return;
         }
-        try
+        try { PinnedShotWindow.Show(image); }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or ArgumentException)
         {
-            var path = Path.Combine(Path.GetTempPath(), $"FrameLine-Pin-{Guid.NewGuid().ToString().ToUpperInvariant()}.png");
-            using (var fs = File.Create(path)) ClipboardImage.EncodePng(image).CopyTo(fs);
-            PinnedShotWindow.Show(path);
-        }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
-        {
+            ESLog.Log("pin failed: " + e.Message);
             GlassConfirmBadge.Show(Tr.L("toast_pin_failed", "Pin failed"), "exclamationmark.triangle.fill");
         }
     }
@@ -71,7 +68,8 @@ public sealed partial class AppCoordinator
             };
             using var owner = new ForegroundOwner();
             if (dialog.ShowDialog(owner.Window) != true) return;
-            ImportFiles(dialog.FileNames);
+            // Off the UI thread (multi-GB videos from a USB drive or a share), then selects the last one.
+            LibraryModel.Shared.ImportFiles(dialog.FileNames);
         });
     }
 
@@ -160,11 +158,13 @@ public sealed partial class AppCoordinator
     {
         if (paths.Count == 0) return;
         int trashed = 0;
+        var ready = new List<string>(paths.Count);
         foreach (var p in paths)
         {
             if (_pendingWrites.Contains(p)) { _trashedWhileWriting.Add(p); trashed++; continue; }
-            if (RecycleBin.Send(p)) trashed++;
+            ready.Add(p);
         }
+        trashed += RecycleBin.SendMany(ready);   // one shell operation: a single nuke prompt at most
         CaptureLibrary.Shared.Reload();
         if (trashed == 0) return;
         GlassConfirmBadge.Show(trashed > 1

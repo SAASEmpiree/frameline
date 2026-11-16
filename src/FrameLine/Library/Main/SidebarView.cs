@@ -16,8 +16,11 @@ internal sealed class SidebarView : DockPanel
     private readonly TextBlock _deleteLabel;
     private readonly SidebarList _list;
     private readonly Grid _listHost;
-    private readonly FrameworkElement _empty;
+    private readonly Grid _middle;
+    private FrameworkElement _empty;
     private readonly FlatIconButton _trash;
+    private readonly TextBlock _title;
+    private readonly FlatIconButton _import, _folder, _refresh, _settings;
 
     public SidebarList List => _list;
 
@@ -27,9 +30,9 @@ internal sealed class SidebarView : DockPanel
 
         // Header
         var header = new DockPanel { Margin = new Thickness(16, 8, 16, 10), LastChildFill = false };
-        var title = Ui.Text(LibText.T("lib_captures"), 15, FontWeights.Bold);
-        DockPanel.SetDock(title, Dock.Left);
-        header.Children.Add(title);
+        _title = Ui.Text(LibText.T("lib_captures"), 15, FontWeights.Bold);
+        DockPanel.SetDock(_title, Dock.Left);
+        header.Children.Add(_title);
         _count = Ui.Text("0", 11, FontWeights.SemiBold);
         var badge = new Border
         {
@@ -62,15 +65,15 @@ internal sealed class SidebarView : DockPanel
 
         // Bottom tool bar
         var bar = new DockPanel { Margin = new Thickness(16, 10, 16, 10), LastChildFill = false };
-        var import = new FlatIconButton(Glyphs.Photo, LibText.T("lib_import_image"));
+        var import = _import = new FlatIconButton(Glyphs.Photo, LibText.T("lib_import_image"));
         import.Click += () => AppCoordinator.Shared.ImportImages();
-        var folder = new FlatIconButton(Glyphs.Folder, LibText.T("lib_open_folder"));
+        var folder = _folder = new FlatIconButton(Glyphs.Folder, LibText.T("lib_open_folder"));
         folder.Click += () => AppCoordinator.Shared.OpenCapturesFolder();
-        var refresh = new FlatIconButton(Glyphs.Refresh, LibText.T("lib_refresh"));
+        var refresh = _refresh = new FlatIconButton(Glyphs.Refresh, LibText.T("lib_refresh"));
         refresh.Click += () => LibraryModel.Shared.RequestReload();
         _trash = new FlatIconButton(Glyphs.Delete, LibText.T("lib_trash_none"), destructive: true);
         _trash.Click += () => LibraryModel.Shared.TrashSelection();
-        var settings = new FlatIconButton(Glyphs.Settings, LibText.T("lib_settings"));
+        var settings = _settings = new FlatIconButton(Glyphs.Settings, LibText.T("lib_settings"));
         // Deferred one turn, like the macOS button (presenting a window mid-click can be swallowed).
         settings.Click += () => Dispatcher.BeginInvoke(() => AppCoordinator.Shared.OpenPreferences());
         foreach (var b in new[] { import, folder, refresh, _trash })
@@ -97,10 +100,10 @@ internal sealed class SidebarView : DockPanel
                 _listHost.Children.Add(new OverlayScrollThumb(_list.Scroller));
         };
         _empty = EmptyState();
-        var middle = new Grid();
-        middle.Children.Add(_listHost);
-        middle.Children.Add(_empty);
-        Children.Add(middle);
+        _middle = new Grid();
+        _middle.Children.Add(_listHost);
+        _middle.Children.Add(_empty);
+        Children.Add(_middle);
 
         LibraryModel.Shared.ItemsChanged += Update;
         LibraryModel.Shared.SelectionChanged += Update;
@@ -112,6 +115,20 @@ internal sealed class SidebarView : DockPanel
         LibraryModel.Shared.ItemsChanged -= Update;
         LibraryModel.Shared.SelectionChanged -= Update;
         _list.ItemsSource = null;   // unbinds every recycled row (view refs, handlers)
+    }
+
+    /// The display language changed: static labels, the empty state and the counted texts.
+    public void Relabel()
+    {
+        _title.Text = LibText.T("lib_captures");
+        _import.Tip = LibText.T("lib_import_image");
+        _folder.Tip = LibText.T("lib_open_folder");
+        _refresh.Tip = LibText.T("lib_refresh");
+        _settings.Tip = LibText.T("lib_settings");
+        _middle.Children.Remove(_empty);
+        _empty = EmptyState();
+        _middle.Children.Add(_empty);
+        Update();
     }
 
     private void Update()

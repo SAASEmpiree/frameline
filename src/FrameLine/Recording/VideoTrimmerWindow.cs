@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using FrameLine.Core;
 using FrameLine.Platform;
 
 namespace FrameLine.Recording;
@@ -39,6 +40,18 @@ internal sealed class VideoTrimmerWindow : Window
         w.Activate();
     }
 
+    /// Closes (Cancel) the trim window open on any of `paths`, so its player releases the file
+    /// before the library recycles it: Windows cannot move an open file.
+    public static void CloseFor(IEnumerable<string> paths)
+    {
+        foreach (var p in paths)
+        {
+            string full;
+            try { full = Path.GetFullPath(p); } catch (Exception) { continue; }
+            if (open.TryGetValue(full, out var w)) w.Close();
+        }
+    }
+
     private VideoTrimmerWindow(string path)
     {
         key = path;
@@ -66,7 +79,11 @@ internal sealed class VideoTrimmerWindow : Window
         Glass.SetDarkTitleBar(this, true);
         Loaded += (_, _) => FocusTrack();
         Activated += (_, _) => FocusTrack();
+        I18n.Shared.LanguageChanged += OnLanguageChanged;
     }
+
+    private void OnLanguageChanged() =>
+        Dispatcher.BeginInvoke(() => Title = RecStrings.WindowTitle(Path.GetFileName(key)));
 
     private void FocusTrack()
     {
@@ -81,6 +98,7 @@ internal sealed class VideoTrimmerWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        I18n.Shared.LanguageChanged -= OnLanguageChanged;
         if (open.TryGetValue(key, out var w) && w == this) open.Remove(key);
         view.Dispose();
         base.OnClosed(e);

@@ -55,6 +55,8 @@ public sealed partial class AppCoordinator
     /// never the automatic editor (the open_in_editor tool exists for that).
     public void RouteAutomationCapture(string path)
     {
+        // macOS finishCapture notifies for every file capture, automation included.
+        Notifier.NotifyCapture(path, isVideo: false);
         CaptureLibrary.Shared.Reload();
         if (Preferences.Shared.ShowPreview) CaptureThumbnail.Show(path);
     }
@@ -63,6 +65,9 @@ public sealed partial class AppCoordinator
 
     /// Declares that `path` is being written; Trash(path) is deferred until EndPendingWrite.
     public void BeginPendingWrite(string path) => _pendingWrites.Add(path);
+
+    /// True while `path` is still being written (a Trash of it is deferred, not performed).
+    public bool IsPendingWrite(string path) => _pendingWrites.Contains(path);
 
     /// The write of `path` finished. Returns false when the capture must NOT be routed further:
     /// it was trashed during the write (the file is now recycled), or the write failed.

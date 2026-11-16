@@ -287,30 +287,89 @@ internal sealed class LibraryModel
 
     // MARK: - Actions that span the selection
 
-    /// Port of AppCoordinator.trashSelection: every actionable capture to the Recycle Bin (through
-    /// the coordinator, which knows captures still being written), one confirmation toast.
+    /// Port of AppCoordinator.trashSelection: every actionable capture to the Recycle Bin in one
+    /// batch (AppCoordinator.TrashMany: one reload, one toast; it knows captures still being written).
     public void TrashSelection()
     {
-        var paths = ActionableSelection.ToList();
+        var paths = ActionableSelection.Where(p => !_trashing.Contains(p)).ToList();
         if (paths.Count == 0) return;
-        BeforeTrash?.Invoke(paths);
-        int trashed = 0;
-        foreach (var p in paths)
-        {
-            try { Shell.AppCoordinator.Shared.Trash(p); } catch { }
-            if (!File.Exists(p)) trashed++;
-        }
-        RequestReload();
-        if (trashed == 0) return;
-        LibToast.Show(trashed > 1 ? LibText.F("lib_deleted_many", trashed) : LibText.T("lib_deleted_one"), Glyphs.Delete);
+        _ = TrashAsync(paths, single: false);
     }
 
-    /// One capture to the Recycle Bin (context menu outside a multi-selection).
-    public void TrashOne(string path)
+    /// One capture to the Recycle Bin (context menu outside a multi-selection, detail capsule,
+    /// floating card). Completes with true once the file is gone (or deferred behind its write).
+    public Task<bool> TrashOne(string path)
     {
-        BeforeTrash?.Invoke(new[] { path });
-        try { Shell.AppCoordinator.Shared.Trash(path); } catch { }
-        RequestReload();
+        if (_trashing.Contains(path)) return Task.FromResult(false);
+        return TrashAsync(new List<string> { path }, single: true);
+    }
+
+    public bool IsTrashing(string path) => _trashing.Contains(path);
+
+    private readonly HashSet<string> _trashing = new(StringComparer.OrdinalIgnoreCase);
+
+    /// macOS trashItem succeeds while AVPlayer still reads the file; Windows refuses to move an
+    /// open file (and the shell then shows its "File In Use" dialog). So the views holding one are
+    /// asked to let go (BeforeTrash), then we wait for the handles to really close: MediaElement
+    /// closes on the media thread, and MediaComposition RCWs only release theirs once finalized.
+    private async Task<bool> TrashAsync(List<string> paths, bool single)
+    {
+        foreach (var p in paths) _trashing.Add(p);
+        try
+        {
+            BeforeTrash?.Invoke(paths);
+            try { Recording.VideoTrimmer.CloseFor(paths); } catch { }
+            var coord = Shell.AppCoordinator.Shared;
+            // A capture still being written is held by its writer, not a viewer: its trash is
+            // deferred by the coordinator, so it is not waited for.
+            await WaitForReleaseAsync(paths.FindAll(p => !coord.IsPendingWrite(p)));
+            var deferred = paths.FindAll(coord.IsPendingWrite);
+            try
+            {
+                if (single) coord.Trash(paths[0]);
+                else coord.TrashMany(paths);
+            }
+            catch { }
+            return paths.TrueForAll(p => deferred.Contains(p) || !File.Exists(p));
+        }
+        finally
+        {
+            foreach (var p in paths) _trashing.Remove(p);
+            RequestReload();
+            SelectionChanged?.Invoke();   // a capture that could not be recycled is shown again
+        }
+    }
+
+    private static async Task WaitForReleaseAsync(List<string> paths)
+    {
+        const int attempts = 8, delayMs = 150;
+        if (paths.Count == 0) return;
+        var pending = paths;
+        for (int i = 0; i < attempts; i++)
+        {
+            var current = pending;
+            pending = await Task.Run(() => current.FindAll(IsLocked));
+            if (pending.Count == 0) return;
+            if (i == 0)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            await Task.Delay(delayMs);
+        }
+    }
+
+    /// True while another handle keeps the file open (sharing violation on an exclusive open).
+    private static bool IsLocked(string path)
+    {
+        try
+        {
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            return false;
+        }
+        catch (IOException) { return File.Exists(path); }
+        catch (UnauthorizedAccessException) { return false; }   // read-only file: the shell decides
     }
 
     /// Raised before files go to the Recycle Bin, so a view playing / editing one releases it

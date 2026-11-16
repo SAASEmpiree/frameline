@@ -17,8 +17,7 @@ namespace FrameLine.Shell;
 public partial class SettingsWindow : Window
 {
     private static SettingsWindow? _shared;
-    /// Current tab ("settingsTab"), kept for the session like the macOS AppStorage value.
-    private static string _tab = "general";
+    private const string TabKey = "settingsTab";
 
     private static readonly (string Id, string Key, string Glyph)[] Tabs =
     {
@@ -27,6 +26,10 @@ public partial class SettingsWindow : Window
         ("recording", "sec_recording", "\uE7C8"),
         ("about", "tab_about", "\uE946"),
     };
+
+    /// Current tab, persisted like the macOS @AppStorage("settingsTab") so a relaunch reopens it.
+    /// Declared after Tabs: static initialisers run in source order and LoadTab reads Tabs.
+    private static string _tab = LoadTab();
 
     private readonly SettingsPanes _panes;
     private readonly Action _onLanguage;
@@ -37,7 +40,7 @@ public partial class SettingsWindow : Window
     /// Opens (or brings back) the Settings window on the active monitor, optionally on a given tab.
     public static void Present(string? tab = null)
     {
-        if (tab != null) _tab = tab;
+        if (tab != null && IsKnownTab(tab)) _tab = tab;
         if (_shared == null)
         {
             _shared = new SettingsWindow();
@@ -66,7 +69,10 @@ public partial class SettingsWindow : Window
         _onLanguage = () => Dispatcher.BeginInvoke(() => { BuildToolbar(); ShowTab(_tab); });
         _onSystemTheme = ApplySystemAppearance;
         // Our own writes echo synchronously through Changed: ignore them, refresh only for outside changes.
-        _onPreference = name => { if (!_panes.IsWriting) Dispatcher.BeginInvoke(() => _panes.Refresh(name)); };
+        _onPreference = name =>
+        {
+            if (name != TabKey && !_panes.IsWriting) Dispatcher.BeginInvoke(() => _panes.Refresh(name));
+        };
         _onMcpStatus = status => Dispatcher.BeginInvoke(() => _panes.UpdateMcpStatus(status));
         I18n.Shared.LanguageChanged += _onLanguage;
         ThemeManager.SystemThemeChanged += _onSystemTheme;
@@ -115,9 +121,19 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private static bool IsKnownTab(string id) => Array.Exists(Tabs, t => t.Id == id);
+
+    private static string LoadTab()
+    {
+        var saved = Preferences.Shared.GetCustom(TabKey, "general");
+        return saved != null && IsKnownTab(saved) ? saved : "general";
+    }
+
     private void ShowTab(string id)
     {
+        if (!IsKnownTab(id)) id = "general";
         _tab = id;
+        if (Preferences.Shared.GetCustom(TabKey, "general") != id) Preferences.Shared.SetCustom(TabKey, id);
         foreach (var child in Toolbar.Children)
             if (child is RadioButton rb) rb.IsChecked = (string)rb.Tag == id;
         PaneHost.Content = id switch

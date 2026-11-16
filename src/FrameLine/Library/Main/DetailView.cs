@@ -46,6 +46,16 @@ internal sealed class DetailView : Grid
         Teardown(immediate: true);
     }
 
+    /// The display language changed: rebuild the built-in viewer / empty state with the new
+    /// strings. An embedded editor is left alone (it keeps its undo history and owns its texts).
+    public void Relabel()
+    {
+        if (_embedded != null) return;
+        Teardown(immediate: false);
+        _shownPath = null;
+        Update();
+    }
+
     private void OnBeforeTrash(IReadOnlyList<string> paths)
     {
         if (_shownPath == null) return;
@@ -66,6 +76,13 @@ internal sealed class DetailView : Grid
             // show "No captures" next to a full list.
             _content = EmptyState();
             _host.Children.Add(_content);
+            return;
+        }
+        if (model.IsTrashing(e.Path))
+        {
+            // Being recycled: reopening it here would take its handle back before the move.
+            Teardown(immediate: true);
+            _shownPath = null;
             return;
         }
         bool samePath = string.Equals(_shownPath, e.Path, StringComparison.OrdinalIgnoreCase);

@@ -32,7 +32,7 @@ Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine/FrameL
 | ScreenCaptureKit screenshot | GDI `BitBlt` from the desktop DC over the virtual screen, per-monitor DPI v2 aware |
 | `screencapture -i -w` window pick | own overlay: hover highlights the top-level window under the cursor (`DwmGetWindowAttribute` EXTENDED_FRAME_BOUNDS), click captures it (`PrintWindow` PW_RENDERFULLCONTENT, fallback BitBlt); `WindowShadow` adds a soft drop shadow like macOS |
 | `RegionSelectOverlay` + loupe | one borderless topmost WPF window per monitor (or one over the virtual screen), frozen screenshot as background, loupe + pixel colour, Esc cancels |
-| ScreenCaptureKit recording + audio | `ScreenRecorderLib` (system audio = loopback, mic optional) to MP4 |
+| ScreenCaptureKit recording + audio | `ScreenRecorderLib` (system audio = loopback, mic optional) to MP4; full screen = primary monitor (`CGMainDisplayID`), video only (macOS never reads `exportGIF`) |
 | AVFoundation trimmer | `MediaElement` playback + `Windows.Media.Editing.MediaComposition` trim/render |
 | Vision OCR | `Windows.Media.Ocr` |
 | NSPasteboard | WPF `Clipboard` (image + file drop list) |
@@ -41,7 +41,7 @@ Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine/FrameL
 | `~/Pictures/FrameLine` | `%USERPROFILE%\Pictures\FrameLine` |
 | SMAppService login item | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` value `FrameLine` |
 | Screen Recording permission | none on Windows; onboarding keeps its steps but the permission step becomes "Microphone (optional)" via `ms-settings:privacy-microphone` |
-| Finder reveal / Trash | `explorer /select,` and `Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(..., SendToRecycleBin)` |
+| Finder reveal / Trash | `explorer /select,` and `SHFileOperationW` (FOF_ALLOWUNDO + FOF_WANTNUKEWARNING: never a silent permanent delete); open players/trimmers release the file first |
 | `~/Library/Application Support/FrameLine/mcp.json` | `%APPDATA%\FrameLine\mcp.json` (ACL: current user only) |
 | Liquid Glass / vibrancy | dark translucent surfaces; Windows 11 Mica/Acrylic via `DwmSetWindowAttribute` (DWMWA_SYSTEMBACKDROP_TYPE) when available, solid fallback on Windows 10 |
 | ⌘ in labels/strings | Ctrl (strings that show shortcuts must show Ctrl+Shift+…) |
@@ -53,7 +53,7 @@ Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine/FrameL
 | core | `src/FrameLine.Core/*.cs`, `tests/**` except `Mcp*` tests | Preferences, I18n, Strings, CaptureLibrary (file part) |
 | mcp | `src/FrameLine.Core/Mcp/`, `tests/FrameLine.Core.Tests/Mcp*` | MCP/* (JSONRPC, HTTP, Server, Discovery, Catalog, Tools logic), tests/MCP* |
 | capture | `src/FrameLine/Capture/` | ScreenCapturer, CaptureManager, RegionSelectOverlay, OverlayText, CaptureSound (window pick replaces screencapture -w) |
-| recording | `src/FrameLine/Recording/` | RecordingManager (+ GIF export), VideoTrimmer |
+| recording | `src/FrameLine/Recording/` | RecordingManager, VideoTrimmer |
 | editor | `src/FrameLine/Editor/` | PreviewWindowController (annotation editor), TextRecognizer |
 | library | `src/FrameLine/Library/` | CaptureThumbnail, CaptureHistoryPanel, PinnedShotWindow, MainWindowController, SidebarView, DetailView, ContentView |
 | shell | `src/FrameLine/Shell/`, `src/FrameLine/Platform/`, `App.xaml(.cs)` | AppDelegate, AppCoordinator, StatusBarController, HotKeyManager, Shortcuts, SettingsView, PreferencesWindowController, OnboardingView/Controller, ThemeManager, GlassUI (shared styles in `Platform/`), Notifications, DebugLog, WindowCentering, AlwaysActiveWindow, MCPController glue (`Shell/McpHost.cs`) |

@@ -428,9 +428,19 @@ internal sealed class ThumbnailPanel : Window
                 coord.RevealInExplorer(path);
                 break;
             case ThumbAction.Trash:
-                coord.Trash(path);
-                Dismiss(true);                                  // file gone: the card goes too
+                TrashFromCard(path);
                 break;
         }
+    }
+
+    /// Through the library model so a player holding the file (library detail, embedded trimmer)
+    /// lets go first; the card leaves only once the file is really gone (or deferred behind its
+    /// write), otherwise the user would believe a still-present capture was deleted.
+    private async void TrashFromCard(string path)
+    {
+        bool gone;
+        try { gone = await LibraryModel.Shared.TrashOne(path); }
+        catch { gone = !System.IO.File.Exists(path); }
+        if (gone) Dismiss(true);
     }
 }

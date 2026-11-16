@@ -49,9 +49,9 @@ public class I18nTests
         Assert.Equal("es", i.CurrentLanguage);
         Assert.Equal("General", Strings.Table["en"]["tab_general"]);
         Assert.Equal(Strings.Table["es"]["tab_general"], i.T("tab_general"));
-        // sec_mcp is missing from the Spanish table in the macOS source too.
-        Assert.False(Strings.Table["es"].ContainsKey("sec_mcp"));
-        Assert.Equal("Local MCP server", i.T("sec_mcp"));
+        // The macOS sound names exist in en/fr only: other languages fall back to English.
+        Assert.False(Strings.Table["es"].ContainsKey("snd_grab"));
+        Assert.Equal("Camera Shutter", i.T("snd_grab"));
         Assert.Equal("no_such_key", i.T("no_such_key"));
     }
 
@@ -91,10 +91,37 @@ public class I18nTests
     public void Key_counts_match_the_Swift_source_plus_the_Windows_keys()
     {
         // Strings.swift: en 72, fr 72, every other language 54; + 4 Windows-only keys each, + 151
-        // strings the macOS app hard-coded outside the table, translated in every language.
+        // strings the macOS app hard-coded outside the table, + the 10 MCP keys (en/fr only in the
+        // source) translated in every language.
         var expected = new Dictionary<string, int> { ["en"] = 76 + 151, ["fr"] = 76 + 151 };
         foreach (var lang in I18n.SupportedLanguages)
-            Assert.Equal(expected.GetValueOrDefault(lang, 58 + 151), Strings.Table[lang].Count);
+            Assert.Equal(expected.GetValueOrDefault(lang, 58 + 151 + 10), Strings.Table[lang].Count);
+    }
+
+    // The macOS sound names (snd_grab, snd_beginRecord…) match no Windows sound id, so the app
+    // never looks them up; every other key is shown somewhere and must exist in every language.
+    private static readonly HashSet<string> MacOnlySoundKeys = new()
+    {
+        "snd_grab", "snd_beginRecord", "snd_jblBeginShort", "snd_micUnmute",
+        "snd_acknowledgmentSent", "snd_dictationGo", "snd_siriListen", "snd_powerChime",
+    };
+
+    [Fact]
+    public void Every_used_key_exists_in_every_language()
+    {
+        foreach (var key in Strings.Table["en"].Keys.Where(k => !MacOnlySoundKeys.Contains(k)))
+            foreach (var lang in I18n.SupportedLanguages)
+                Assert.True(Strings.Table[lang].ContainsKey(key), $"{lang} lacks {key}");
+    }
+
+    [Theory]
+    [InlineData("fr", "Paramètres…", "Paramètres")]
+    [InlineData("es", "Configuración…", "Configuración")]
+    [InlineData("pt-BR", "Configurações…", "Configurações")]
+    public void Settings_uses_the_Windows_term(string lang, string menu, string library)
+    {
+        Assert.Equal(menu, Strings.Table[lang]["m_settings"]);
+        Assert.Equal(library, Strings.Table[lang]["lib_settings"]);
     }
 
     [Theory]

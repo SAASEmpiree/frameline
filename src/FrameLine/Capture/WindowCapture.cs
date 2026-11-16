@@ -129,9 +129,15 @@ public static class WindowCapture
         byte[]? px = null;
         // A DPI-unaware window renders at its logical size: PrintWindow would return a shrunken image.
         bool dpiMatches = GetDpiForWindow(hwnd) == (uint)Math.Round(96 * scale);
-        if (dpiMatches)
+        if (dpiMatches && Responds(hwnd) && TryClaim(hwnd))
         {
-            var job = Task.Run(() => PrintWindowPixels(hwnd, frame));
+            // The probe can race a window that hangs right after it: keep the 2 s cap, and keep the
+            // hwnd claimed until PrintWindow really returns, so retries never stack blocked calls.
+            var job = Task.Run(() =>
+            {
+                try { return PrintWindowPixels(hwnd, frame); }
+                finally { Release(hwnd); }
+            });
             if (job.Wait(TimeSpan.FromSeconds(2))) px = job.Result;
         }
         if (px == null)
@@ -166,6 +172,21 @@ public static class WindowCapture
             alpha = true;
         }
         return ScreenCapturer.ToBitmap(px, w, h, alpha ? PixelFormats.Bgra32 : PixelFormats.Bgr32, 96 * scale);
+    }
+
+    private static readonly HashSet<IntPtr> printing = new();
+
+    private static bool TryClaim(IntPtr hwnd) { lock (printing) return printing.Add(hwnd); }
+
+    private static void Release(IntPtr hwnd) { lock (printing) printing.Remove(hwnd); }
+
+    /// PrintWindow waits on the target's message loop: a hung window would pin a pool thread and a
+    /// window-size DIB until it recovers. Ask first, with a short timeout that aborts when it is hung.
+    private static bool Responds(IntPtr hwnd)
+    {
+        if (IsHungAppWindow(hwnd)) return false;
+        return SendMessageTimeout(hwnd, WM_NULL, IntPtr.Zero, IntPtr.Zero,
+            SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, out _) != IntPtr.Zero;
     }
 
     /// PrintWindow into a DIB the size of the window rect, cropped to the visible frame. Null when it

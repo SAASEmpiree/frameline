@@ -28,7 +28,7 @@ It is a port of the macOS app, feature for feature and string for string: same m
 ## ✨ Features
 
 - 🖼️ **Area, window or full screen** — with a loupe and pixel colour while you select, plus a 3 / 5 / 10 s timer for full screen. Multi-monitor and per-monitor DPI aware.
-- 🎬 **Screen recording** — MP4 (H.264 + AAC) with system audio and microphone, start and stop from the tray or **Ctrl+Shift+E**. Optional GIF export.
+- 🎬 **Screen recording** — MP4 (H.264 + AAC) of the primary monitor with system audio and microphone, start and stop from the tray or **Ctrl+Shift+E**.
 - 🪟 **Quick preview** — floating thumbnail after each capture, in the corner you choose; drag and drop it anywhere.
 - ✏️ **Annotation editor** — rectangle, arrow, pen, text, pixelate and crop.
 - ✂️ **Video trimmer** — trim a recording in place, the twin of the image editor.
@@ -79,7 +79,7 @@ src/FrameLine.Core/       # net8.0, no Windows API: settings, i18n, capture libr
 src/FrameLine/            # net8.0-windows, WPF
   Shell/                  #   tray, hotkeys, coordinator, settings, onboarding, MCP host
   Capture/                #   GDI capture, region / window overlays, loupe, sounds
-  Recording/              #   ScreenRecorderLib MP4, GIF export, trimmer (MediaComposition)
+  Recording/              #   ScreenRecorderLib MP4, trimmer (MediaComposition)
   Editor/                 #   annotation editor, OCR (Windows.Media.Ocr)
   Library/                #   quick preview, history panel, pinned shots, library window
   Platform/               #   theme, Mica / dark title bar, shared toast

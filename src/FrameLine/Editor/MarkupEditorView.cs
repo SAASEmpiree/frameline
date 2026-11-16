@@ -38,6 +38,13 @@ public sealed class MarkupEditorView : UserControl, IDisposable
     private EditorToolButton _undoButton = null!;
     private EditorToolButton _redoButton = null!;
     private EditorToolButton _moreButton = null!;
+    // Static labels, reapplied when the display language changes while the editor is shown.
+    private readonly List<(FrameworkElement Element, Func<string> Text)> _tooltips = new();
+    private EditorPillButton _copyButton = null!;
+    private EditorPillButton _doneButton = null!;
+    private EditorToolButton _fitButton = null!;
+    private readonly Action _onLanguage;
+    private bool _languageHooked;
     private Popup? _colorPopup;
     private long _colorPopupClosedAt;
 
@@ -66,7 +73,40 @@ public sealed class MarkupEditorView : UserControl, IDisposable
         UpdateUndoRedo();
 
         PreviewKeyDown += OnPreviewKeyDown;
-        Loaded += (_, _) => { if (_zoomFitMode) ApplyFit(); else ApplyScale(); };
+        // Hooked only while in the visual tree: the singleton I18n must not keep a detached
+        // editor (library selection moved) alive. Loaded also catches a change made while unloaded.
+        _onLanguage = () => Dispatcher.BeginInvoke(ApplyStrings);
+        Loaded += (_, _) =>
+        {
+            HookLanguage(true);
+            ApplyStrings();
+            if (_zoomFitMode) ApplyFit(); else ApplyScale();
+        };
+        Unloaded += (_, _) => HookLanguage(false);
+    }
+
+    private void HookLanguage(bool on)
+    {
+        if (on == _languageHooked) return;
+        _languageHooked = on;
+        if (on) I18n.Shared.LanguageChanged += _onLanguage;
+        else I18n.Shared.LanguageChanged -= _onLanguage;
+    }
+
+    /// Re-reads every label built once in BuildUI (menus, popups and toasts are built on demand).
+    private void ApplyStrings()
+    {
+        foreach (var (element, text) in _tooltips) element.ToolTip = text();
+        _copyButton.Title = EditorText.Copy;
+        _doneButton.Title = EditorText.Done;
+        _fitButton.Label = EditorText.Fit;
+    }
+
+    private T Tip<T>(T element, Func<string> text) where T : FrameworkElement
+    {
+        element.ToolTip = text();
+        _tooltips.Add((element, text));
+        return element;
     }
 
     /// Moved to a monitor with another DPI: keep "100%" pixel exact and the fit correct.
@@ -104,34 +144,34 @@ public sealed class MarkupEditorView : UserControl, IDisposable
         for (int i = 0; i <= 5; i++) tools.Add(MakeToolButton(i));
         tools.Add(new BarSeparator());
 
-        _colorButton.ToolTip = EditorText.Color;
+        Tip(_colorButton, () => EditorText.Color);
         _colorButton.Click += (_, _) => ToggleColorPopup();
         tools.Add(_colorButton);
         tools.Add(new BarSeparator());
 
         tools.Add(MakeToolButton(6));
-        tools.Add(MakeIconButton(EditorIcon.Sparkles, EditorText.Enhance,
+        tools.Add(MakeIconButton(EditorIcon.Sparkles, () => EditorText.Enhance,
                                  () => EditorToast.Show(EditorText.EnhanceSoon, EditorToast.Kind.Info)));
         tools.Add(new BarSeparator());
 
-        _undoButton = MakeIconButton(EditorIcon.Undo, EditorText.Undo, () => _canvas.Undo());
-        _redoButton = MakeIconButton(EditorIcon.Redo, EditorText.Redo, () => _canvas.Redo());
+        _undoButton = MakeIconButton(EditorIcon.Undo, () => EditorText.Undo, () => _canvas.Undo());
+        _redoButton = MakeIconButton(EditorIcon.Redo, () => EditorText.Redo, () => _canvas.Redo());
         tools.Add(_undoButton);
         tools.Add(_redoButton);
         tools.Add(new BarSeparator());
 
-        tools.Add(MakeIconButton(EditorIcon.MagicWand, EditorText.MagicEraser,
+        tools.Add(MakeIconButton(EditorIcon.MagicWand, () => EditorText.MagicEraser,
                                  () => EditorToast.Show(EditorText.EraserSoon, EditorToast.Kind.Info)));
-        _moreButton = MakeIconButton(EditorIcon.Ellipsis, EditorText.More, ShowMoreMenu);
+        _moreButton = MakeIconButton(EditorIcon.Ellipsis, () => EditorText.More, ShowMoreMenu);
         tools.Add(_moreButton);
         tools.Add(new BarSeparator());
 
-        var copy = new EditorPillButton(EditorText.Copy, EditorIcon.CopyDoc, primary: false);
-        copy.Click += (_, _) => CopyImage();
-        var done = new EditorPillButton(EditorText.Done, EditorIcon.Checkmark, primary: true);
-        done.Click += (_, _) => Done();
-        tools.Add(copy);
-        tools.Add(done);
+        _copyButton = new EditorPillButton(EditorText.Copy, EditorIcon.CopyDoc, primary: false);
+        _copyButton.Click += (_, _) => CopyImage();
+        _doneButton = new EditorPillButton(EditorText.Done, EditorIcon.Checkmark, primary: true);
+        _doneButton.Click += (_, _) => Done();
+        tools.Add(_copyButton);
+        tools.Add(_doneButton);
         var toolCapsule = MakeCapsule(tools, 42, spacing: 3, separatorGap: 7);
         toolCapsule.Margin = new Thickness(0, 14, 0, 0);
 
@@ -141,11 +181,11 @@ public sealed class MarkupEditorView : UserControl, IDisposable
         StyleLabel(_zoomLabel, FontWeights.SemiBold, Colors.White);
         _zoomLabel.Width = 40;
         _zoomLabel.TextAlignment = TextAlignment.Center;
-        var zoomOut = MakeIconButton(EditorIcon.ZoomOut, EditorText.ZoomOut, ZoomOut, iconSize: 13.5, side: 24);
-        var zoomIn = MakeIconButton(EditorIcon.ZoomIn, EditorText.ZoomIn, ZoomIn, iconSize: 13.5, side: 24);
-        var fit = new EditorToolButton(EditorText.Fit, 11.5, FontWeights.Medium, fixedWidth: null, side: 24) { ToolTip = EditorText.FitTip };
+        var zoomOut = MakeIconButton(EditorIcon.ZoomOut, () => EditorText.ZoomOut, ZoomOut, iconSize: 13.5, side: 24);
+        var zoomIn = MakeIconButton(EditorIcon.ZoomIn, () => EditorText.ZoomIn, ZoomIn, iconSize: 13.5, side: 24);
+        var fit = _fitButton = Tip(new EditorToolButton(EditorText.Fit, 11.5, FontWeights.Medium, fixedWidth: null, side: 24), () => EditorText.FitTip);
         fit.Click += (_, _) => ZoomFit();
-        var actual = new EditorToolButton("100%", 11.5, FontWeights.Medium, fixedWidth: null, side: 24) { ToolTip = EditorText.ActualSizeTip };
+        var actual = Tip(new EditorToolButton("100%", 11.5, FontWeights.Medium, fixedWidth: null, side: 24), () => EditorText.ActualSizeTip);
         actual.Click += (_, _) => ZoomActual();
         var zoomCapsule = MakeCapsule(new List<UIElement>
         {
@@ -216,7 +256,7 @@ public sealed class MarkupEditorView : UserControl, IDisposable
         var b = tool == MarkupTool.Text
             ? new EditorToolButton("Aa", 12.5, FontWeights.SemiBold)
             : new EditorToolButton(IconFor(tool));
-        b.ToolTip = LabelFor(tool);
+        Tip(b, () => LabelFor(tool));
         b.Tag = index;
         b.IsSelectedTool = index == 0;
         b.Click += (_, _) => SelectTool(b);
@@ -224,9 +264,9 @@ public sealed class MarkupEditorView : UserControl, IDisposable
         return b;
     }
 
-    private static EditorToolButton MakeIconButton(EditorIcon icon, string tip, Action action, double iconSize = 15, double side = 26)
+    private EditorToolButton MakeIconButton(EditorIcon icon, Func<string> tip, Action action, double iconSize = 15, double side = 26)
     {
-        var b = new EditorToolButton(icon, iconSize, side) { ToolTip = tip };
+        var b = Tip(new EditorToolButton(icon, iconSize, side), tip);
         b.Click += (_, _) => action();
         return b;
     }

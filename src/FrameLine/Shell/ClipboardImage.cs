@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FrameLine.Core;
 
@@ -55,7 +56,7 @@ public static class ClipboardImage
             var bitmap = LoadFile(path);
             if (bitmap != null)
             {
-                data.SetImage(bitmap);
+                data.SetImage(Opaque(bitmap));
                 if (!data.GetDataPresent(PngFormat)) data.SetData(PngFormat, EncodePng(bitmap));
             }
         }
@@ -70,7 +71,7 @@ public static class ClipboardImage
     public static bool SetImage(BitmapSource image)
     {
         var data = new DataObject();
-        data.SetImage(image);
+        data.SetImage(Opaque(image));
         data.SetData(PngFormat, EncodePng(image));
         return Retry(() => { Clipboard.SetDataObject(data, true); return true; }, false);
     }
@@ -81,6 +82,46 @@ public static class ClipboardImage
 
     public static bool SetText(string text) =>
         Retry(() => { Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, text), true); return true; }, false);
+
+    /// Text holding a secret (the MCP bearer token): kept out of Win+V history, cloud clipboard sync
+    /// and clipboard monitors, a channel the macOS pasteboard does not have.
+    public static bool SetSecretText(string text)
+    {
+        var data = new DataObject(DataFormats.UnicodeText, text);
+        data.SetData("ExcludeClipboardContentFromMonitorProcessing", new MemoryStream(new byte[] { 0 }));
+        data.SetData("CanIncludeInClipboardHistory", new MemoryStream(BitConverter.GetBytes(0)));   // DWORD 0
+        data.SetData("CanUploadToCloudClipboard", new MemoryStream(BitConverter.GetBytes(0)));     // DWORD 0
+        return Retry(() => { Clipboard.SetDataObject(data, true); return true; }, false);
+    }
+
+    /// The image for CF_BITMAP / CF_DIB: most consumers of those formats ignore alpha, so a window
+    /// shadow or a transparent margin pasted as solid black. Composited onto white like
+    /// CaptureManager does; the "PNG" format keeps the original alpha. Other modules' copy paths
+    /// should use this too.
+    public static BitmapSource Opaque(BitmapSource image)
+    {
+        var f = image.Format;
+        bool hasAlpha = f == PixelFormats.Bgra32 || f == PixelFormats.Pbgra32 || f == PixelFormats.Rgba64
+            || f == PixelFormats.Prgba64 || f == PixelFormats.Rgba128Float || f == PixelFormats.Prgba128Float;
+        if (!hasAlpha) return image;
+        BitmapSource src = f == PixelFormats.Bgra32 ? image : new FormatConvertedBitmap(image, PixelFormats.Bgra32, null, 0);
+        int w = src.PixelWidth, h = src.PixelHeight, stride = w * 4;
+        var px = new byte[stride * h];
+        src.CopyPixels(px, stride, 0);
+        bool translucent = false;
+        for (int i = 3; i < px.Length; i += 4) if (px[i] != 255) { translucent = true; break; }
+        if (!translucent) return image;
+        for (int i = 0; i < px.Length; i += 4)
+        {
+            int a = px[i + 3];
+            if (a == 255) continue;
+            for (int c = 0; c < 3; c++) px[i + c] = (byte)((px[i + c] * a + 255 * (255 - a) + 127) / 255);
+            px[i + 3] = 255;
+        }
+        var result = BitmapSource.Create(w, h, image.DpiX, image.DpiY, PixelFormats.Bgr32, null, px, stride);
+        result.Freeze();
+        return result;
+    }
 
     private static string? FirstImageFile()
     {

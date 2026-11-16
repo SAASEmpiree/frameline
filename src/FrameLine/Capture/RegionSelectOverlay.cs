@@ -122,7 +122,11 @@ internal sealed class RegionSession : OverlaySession
 
     private void DrawBadge(DrawingContext dc, double scale, Rect bounds, Rect sel)
     {
-        var text = OverlayText.Format($"{selection.Width} × {selection.Height}", OverlayText.Badge, OverlayText.BadgeSize, scale);
+        // Logical units like the macOS points (400 × 300 on a 150 % display, not 600 × 450); the capture
+        // itself stays in physical pixels.
+        string dim = string.Create(CultureInfo.InvariantCulture,
+            $"{(int)Math.Round(selection.Width / scale)} × {(int)Math.Round(selection.Height / scale)}");
+        var text = OverlayText.Format(dim, OverlayText.Badge, OverlayText.BadgeSize, scale);
         const double padX = 6, padY = 3;
         double bw = text.Width + padX * 2, bh = text.Height + padY * 2;
         double x = Math.Min(Math.Max(sel.X + sel.Width / 2 - bw / 2, 2), bounds.Width - bw - 2);
@@ -170,14 +174,26 @@ internal sealed class RegionSession : OverlaySession
         dc.DrawEllipse(null, RingPen, center, Radius, Radius);
 
         uint rgb = Frozen.ColorAt(CursorPos.X, CursorPos.Y) ?? 0;
+        var g = LogicalGlobal(origin, lx, ly, scale);
         string label = string.Create(CultureInfo.InvariantCulture,
-            $"#{rgb:X6} · {CursorPos.X}, {CursorPos.Y}");
+            $"#{rgb:X6} · {(int)Math.Round(g.X)}, {(int)Math.Round(g.Y)}");
         var text = OverlayText.Format(label, OverlayText.Loupe, OverlayText.LoupeSize, scale);
         const double padX = 7, padY = 3;
         double pw = text.Width + padX * 2, ph = text.Height + padY * 2;
         var pill = new Rect(Snap(center.X - pw / 2, scale), Snap(circle.Bottom + LabelGap, scale), pw, ph);
         dc.DrawRoundedRectangle(OverlayText.PillBack, null, pill, 5, 5);
         dc.DrawText(text, new Point(pill.X + padX, pill.Y + padY));
+    }
+
+    /// Desktop coordinates in logical units, origin at the primary's top-left, like macOS points.
+    /// Windows lays displays out in physical pixels, so there is no exact equivalent with mixed DPI:
+    /// the display's origin is expressed in the primary's units (it sits where the primary's logical
+    /// edge ends, as on a Mac arrangement), then the offset inside it in its own units.
+    private Point LogicalGlobal(Int32Rect origin, int lx, int ly, double scale)
+    {
+        double primary = 1;
+        foreach (var m in Frozen.Monitors) if (m.IsPrimary) { primary = m.Scale; break; }
+        return new Point(origin.X / primary + lx / scale, origin.Y / primary + ly / scale);
     }
 
     private void EnsurePens(double scale)

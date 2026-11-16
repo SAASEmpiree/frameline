@@ -44,13 +44,7 @@ public partial class VideoTrimmerView : UserControl, IDisposable
         path = videoPath;
         InitializeComponent();
 
-        RestartButton.ToolTip = RecStrings.Restart;
-        PlayButton.ToolTip = RecStrings.Play;
-        MuteButton.ToolTip = RecStrings.Mute;
-        LoopButton.ToolTip = RecStrings.Loop;
-        MoreButton.ToolTip = RecStrings.More;
-        CopyLabel.Text = RecStrings.Copy;
-        DoneLabel.Text = RecStrings.Done;
+        ApplyStrings();
 
         tick = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromSeconds(1.0 / 30) };
         tick.Tick += (_, _) => OnTick();
@@ -60,9 +54,16 @@ public partial class VideoTrimmerView : UserControl, IDisposable
         Player.MediaEnded += (_, _) => OnMediaEnded();
 
         WireTrack();
-        Loaded += (_, _) => { if (!disposed) tick.Start(); };
+        Loaded += (_, _) =>
+        {
+            if (disposed) return;
+            tick.Start();
+            I18n.Shared.LanguageChanged -= OnLanguageChanged;
+            I18n.Shared.LanguageChanged += OnLanguageChanged;
+            ApplyStrings();   // the language may have changed while detached
+        };
         // Stop playback when the host goes away (window closed, other capture selected).
-        Unloaded += (_, _) => { tick.Stop(); PausePlayer(); };
+        Unloaded += (_, _) => { tick.Stop(); PausePlayer(); I18n.Shared.LanguageChanged -= OnLanguageChanged; };
 
         AttachPlayer();
         _ = LoadAssetAsync();
@@ -151,6 +152,21 @@ public partial class VideoTrimmerView : UserControl, IDisposable
             lastSeek = Math.Min(duration, outTime);
         }
         UpdatePlayIcon();
+    }
+
+    // The language can change while the trimmer sits in the library detail panel.
+    private void OnLanguageChanged() =>
+        Dispatcher.BeginInvoke(() => { if (!disposed) ApplyStrings(); });
+
+    private void ApplyStrings()
+    {
+        RestartButton.ToolTip = RecStrings.Restart;
+        PlayButton.ToolTip = isPlaying ? RecStrings.Pause : RecStrings.Play;
+        MuteButton.ToolTip = Player.IsMuted ? RecStrings.Unmute : RecStrings.Mute;
+        LoopButton.ToolTip = RecStrings.Loop;
+        MoreButton.ToolTip = RecStrings.More;
+        CopyLabel.Text = RecStrings.Copy;
+        DoneLabel.Text = RecStrings.Done;
     }
 
     private void UpdatePlayIcon()
@@ -547,6 +563,7 @@ public partial class VideoTrimmerView : UserControl, IDisposable
     {
         if (disposed) return;
         disposed = true;
+        I18n.Shared.LanguageChanged -= OnLanguageChanged;
         loadToken++;
         tick.Stop();
         exporter.Cancel();

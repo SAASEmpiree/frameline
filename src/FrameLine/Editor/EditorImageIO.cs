@@ -96,7 +96,7 @@ internal static class EditorImageIO
         return WithClipboardRetry(() =>
         {
             var data = new DataObject();
-            data.SetImage(image);
+            data.SetImage(FrameLine.Shell.ClipboardImage.Opaque(image));
             data.SetData("PNG", new MemoryStream(png), false);
             Clipboard.SetDataObject(data, true);
         });

@@ -6,7 +6,7 @@ using ScreenRecorderLib;
 
 namespace FrameLine.Recording;
 
-/// Builds ScreenRecorderLib options for "full screen of the monitor under the cursor", or for a
+/// Builds ScreenRecorderLib options for "full screen of the primary monitor", or for a
 /// rectangle (physical virtual-screen pixels) cropped out of the monitor that holds its centre.
 internal static class RecorderSetup
 {
@@ -27,7 +27,8 @@ internal static class RecorderSetup
             var crop = (known ? Crop(r, monitor) : null) ?? throw new ArgumentException("The region is not on a display.");
             return Finish(display, fps, systemAudio, microphone, hardwareEncoding, crop, monitor);
         }
-        known = RecNative.TryGetMonitorUnderCursor(out var device, out monitor, out _);
+        // Full screen films the primary monitor, like macOS (CGMainDisplayID), not the one under the cursor.
+        known = RecNative.TryGetPrimaryMonitor(out var device, out monitor, out _);
         return Finish(MakeSource(known ? device : null, ref monitor, ref known), fps, systemAudio, microphone, hardwareEncoding, null, monitor);
     }
 

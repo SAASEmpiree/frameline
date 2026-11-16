@@ -166,6 +166,11 @@ public sealed partial class AppCoordinator
 
     private void QuitCore() => _ = QuitAsync();
 
+    /// How long quit / logoff waits for a recording to finalise: the recording module's own hard
+    /// limit (60 s while the muxer still holds the file) plus a margin. A shorter cap exited while
+    /// the encoder was still writing the MP4 index on a slow disk, leaving an unplayable file.
+    private static readonly TimeSpan RecordingFinalizeBudget = TimeSpan.FromSeconds(65);
+
     private async Task QuitAsync()
     {
         if (_quitting) return;
@@ -173,7 +178,7 @@ public sealed partial class AppCoordinator
         // A recording in progress is finalised first, or the MP4 would be left without its index.
         if (RecordingManager.Shared.IsRecording || RecordingManager.Shared.IsStarting)
         {
-            try { await Task.WhenAny(RecordingManager.Shared.StopAsync(), Task.Delay(TimeSpan.FromSeconds(5))); }
+            try { await Task.WhenAny(RecordingManager.Shared.StopAsync(), Task.Delay(RecordingFinalizeBudget)); }
             catch (Exception e) { ESLog.Log("stop on quit: " + e.Message); }
         }
         StopServices();
@@ -188,7 +193,8 @@ public sealed partial class AppCoordinator
         {
             var stop = RecordingManager.Shared.StopAsync();
             var frame = new DispatcherFrame();
-            _ = Task.WhenAny(stop, Task.Delay(TimeSpan.FromSeconds(5)))
+            // Windows shows its "an app is preventing shutdown" screen meanwhile; the user can still force it.
+            _ = Task.WhenAny(stop, Task.Delay(RecordingFinalizeBudget))
                 .ContinueWith(_ => frame.Continue = false, TaskScheduler.Default);
             Dispatcher.PushFrame(frame);
         }

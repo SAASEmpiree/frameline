@@ -85,7 +85,7 @@ internal sealed class SettingsPanes
         _mcpCopy = ButtonFor(Tr.L("mcp_copy_config"), () =>
         {
             var json = McpController.Shared.ClientConfigJson();
-            if (json != null && ClipboardImage.SetText(json))
+            if (json != null && ClipboardImage.SetSecretText(json))
                 GlassConfirmBadge.Show(Tr.L("toast_mcp_config_copied", "Config MCP copiée"));
         });
         _mcpRegenerate = ButtonFor(Tr.L("mcp_regenerate"), () =>

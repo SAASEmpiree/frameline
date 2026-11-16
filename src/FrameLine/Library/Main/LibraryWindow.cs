@@ -36,7 +36,8 @@ internal sealed class LibraryWindow : Window
     private readonly Border _spacer;
     private readonly SidebarView _sidebar;
     private readonly DetailView _detail;
-    private readonly CaptionButton _maxButton;
+    private readonly CaptionButton _maxButton, _minButton, _closeButton;
+    private readonly FlatIconButton _toggle, _region, _window, _full;
     private bool _collapsed;
     private int _sidebarAnimGen;
     private double _expandedWidth = SidebarDefault;
@@ -128,17 +129,17 @@ internal sealed class LibraryWindow : Window
 
         // Title bar content.
         var left = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        var toggle = new FlatIconButton(Glyphs.Sidebar, LibText.T("lib_toggle_sidebar"), 15, ToggleSize) { Margin = new Thickness(ToggleLeft, 0, 0, 0) };
+        var toggle = _toggle = new FlatIconButton(Glyphs.Sidebar, LibText.T("lib_toggle_sidebar"), 15, ToggleSize) { Margin = new Thickness(ToggleLeft, 0, 0, 0) };
         toggle.Click += ToggleSidebar;
         left.Children.Add(toggle);
         _spacer = new Border { Width = 0 };
         left.Children.Add(_spacer);
         var coord = AppCoordinator.Shared;
-        var region = new FlatIconButton(Glyphs.Region, LibText.T("m_capture_area"), 15, ToggleSize);
+        var region = _region = new FlatIconButton(Glyphs.Region, LibText.T("m_capture_area"), 15, ToggleSize);
         region.Click += coord.CaptureRegion;
-        var window = new FlatIconButton("window", LibText.T("m_capture_window"), 15, ToggleSize) { Margin = new Thickness(4, 0, 0, 0) };
+        var window = _window = new FlatIconButton("window", LibText.T("m_capture_window"), 15, ToggleSize) { Margin = new Thickness(4, 0, 0, 0) };
         window.Click += coord.CaptureWindow;
-        var full = new FlatIconButton(Glyphs.Monitor, LibText.T("m_capture_fullscreen"), 15, ToggleSize) { Margin = new Thickness(4, 0, 0, 0) };
+        var full = _full = new FlatIconButton(Glyphs.Monitor, LibText.T("m_capture_fullscreen"), 15, ToggleSize) { Margin = new Thickness(4, 0, 0, 0) };
         full.Click += coord.CaptureFull;
         left.Children.Add(region);
         left.Children.Add(window);
@@ -148,7 +149,7 @@ internal sealed class LibraryWindow : Window
         left.Children.Add(title);
 
         var caption = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        var min = new CaptionButton(Glyphs.ChromeMinimize, LibText.T("lib_minimize"), false, TitleH);
+        var min = _minButton = new CaptionButton(Glyphs.ChromeMinimize, LibText.T("lib_minimize"), false, TitleH);
         min.Click += () => SystemCommands.MinimizeWindow(this);
         _maxButton = new CaptionButton(Glyphs.ChromeMaximize, LibText.T("lib_maximize"), false, TitleH);
         _maxButton.Click += () =>
@@ -156,7 +157,7 @@ internal sealed class LibraryWindow : Window
             if (WindowState == WindowState.Maximized) SystemCommands.RestoreWindow(this);
             else SystemCommands.MaximizeWindow(this);
         };
-        var close = new CaptionButton(Glyphs.ChromeClose, LibText.T("lib_close"), true, TitleH);
+        var close = _closeButton = new CaptionButton(Glyphs.ChromeClose, LibText.T("lib_close"), true, TitleH);
         close.Click += Close;
         caption.Children.Add(min);
         caption.Children.Add(_maxButton);
@@ -175,6 +176,7 @@ internal sealed class LibraryWindow : Window
 
         ThemeManager.Attach(this);
         ThemeManager.Changed += OnThemeChanged;
+        FrameLine.Core.I18n.Shared.LanguageChanged += OnLanguageChanged;
         LibraryModel.Shared.AddClockUser();
 
         SourceInitialized += (_, _) => RestorePlacement();
@@ -186,6 +188,7 @@ internal sealed class LibraryWindow : Window
         Closed += (_, _) =>
         {
             ThemeManager.Changed -= OnThemeChanged;
+            FrameLine.Core.I18n.Shared.LanguageChanged -= OnLanguageChanged;
             LibraryModel.Shared.RemoveClockUser();
             _sidebar.Detach();
             _detail.Detach();
@@ -206,6 +209,23 @@ internal sealed class LibraryWindow : Window
     {
         LibraryTheme.Apply(Resources, ThemeManager.IsDark);
     }
+
+    /// Raised on the thread that changed the language: relabel on ours.
+    private void OnLanguageChanged() => Dispatcher.BeginInvoke(() =>
+    {
+        if (!IsLoaded && !IsVisible) return;
+        _toggle.Tip = LibText.T("lib_toggle_sidebar");
+        _region.Tip = LibText.T("m_capture_area");
+        _window.Tip = LibText.T("m_capture_window");
+        _full.Tip = LibText.T("m_capture_fullscreen");
+        _minButton.SetGlyph(Glyphs.ChromeMinimize, LibText.T("lib_minimize"));
+        _closeButton.SetGlyph(Glyphs.ChromeClose, LibText.T("lib_close"));
+        bool max = WindowState == WindowState.Maximized;
+        _maxButton.SetGlyph(max ? Glyphs.ChromeRestore : Glyphs.ChromeMaximize, LibText.T(max ? "lib_restore" : "lib_maximize"));
+        _sidebar.Relabel();
+        _detail.Relabel();
+        foreach (var e in LibraryModel.Shared.Items) e.RaiseSubtitles();   // "5 min. ago"
+    });
 
     /// The capture buttons start at the detail's left edge while the sidebar is open, and group
     /// next to the toggle when it is collapsed (the spacer follows the divider frame by frame).

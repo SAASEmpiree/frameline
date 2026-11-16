@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -11,7 +12,7 @@ using ScreenRecorderLib;
 
 namespace FrameLine.Recording;
 
-/// Port of RecordingManager.swift: full-screen recording of the monitor under the cursor to an
+/// Port of RecordingManager.swift: full-screen recording of the primary monitor to an
 /// H.264 MP4 with system audio and/or microphone, cursor visible. Every state field is touched on
 /// the UI thread only; public calls from other threads (MCP) are marshalled there.
 public sealed class RecordingManager
@@ -34,6 +35,9 @@ public sealed class RecordingManager
     private bool stopping;                // Stop() in flight: a second press does nothing more
     private bool finalizing;              // routeFinished runs once per recording
     private TaskCompletionSource<string?>? finish;
+    // The Stop() call in flight for the current recorder: Dispose must run after it, never alongside
+    // it (ScreenRecorderLib is native; a concurrent teardown is an access violation, not an exception).
+    private Task? stopTask;
     private readonly Stopwatch clock = new();
 
     public bool IsRecording => recording;
@@ -45,7 +49,7 @@ public sealed class RecordingManager
 
     /// Raised on the UI thread when recording starts/stops (tray icon, menu text).
     public event Action? StateChanged;
-    /// Raised on the UI thread with the final .mp4 path (and the GIF is exported after, if enabled).
+    /// Raised on the UI thread with the final .mp4 path.
     public event Action<string>? Finished;
 
     public void ToggleFullScreen()
@@ -200,7 +204,7 @@ public sealed class RecordingManager
 
         var rec = recorder;
         int id = generation;
-        Task.Run(() =>
+        stopTask = Task.Run(() =>
         {
             try { rec.Stop(); }
             catch (Exception ex) { Log("stop", ex); }
@@ -248,7 +252,9 @@ public sealed class RecordingManager
         finalizing = true;
         var path = currentPath;
         var rec = recorder;
+        var pendingStop = stopTask;
         recorder = null;
+        stopTask = null;
         generation++;
         currentPath = null;
         recording = false;
@@ -256,7 +262,7 @@ public sealed class RecordingManager
         stopping = false;
         cancelStart = false;
         clock.Reset();
-        if (rec != null) _ = DisposeRecorder(rec, stopFirst: false);
+        if (rec != null) _ = DisposeRecorder(rec, stopFirst: false, after: pendingStop);
         HoldThumbnails(false);   // before Show below, so the new card is visible
 
         bool ok = path != null && FileLength(path) > 0;
@@ -277,34 +283,29 @@ public sealed class RecordingManager
         finish = null;
         done?.TrySetResult(ok ? path : null);
 
-        if (ok && Preferences.Shared.ExportGif) _ = ExportGifAsync(path!);
+        // No GIF here: the macOS app registers exportGIF but never reads it, a recording yields the
+        // video only (an extra GIF would also take the library selection away from it).
     }
 
     private void FailStart(bool showBadge)
     {
         var rec = recorder;
+        var pendingStop = stopTask;
         recorder = null;
+        stopTask = null;
         generation++;
         currentPath = null;
         recording = false;
         starting = false;     // releases the start lock: a new attempt is possible
         stopping = false;
         cancelStart = false;
-        if (rec != null) _ = DisposeRecorder(rec, stopFirst: true);
+        if (rec != null) _ = DisposeRecorder(rec, stopFirst: pendingStop == null, after: pendingStop);
         HoldThumbnails(false);
         if (showBadge) RecBadge.Show(RecStrings.RecordingFailed, RecBadge.GlyphWarning);
         StateChanged?.Invoke();
         var done = finish;
         finish = null;
         done?.TrySetResult(null);
-    }
-
-    private static async Task ExportGifAsync(string videoPath)
-    {
-        var prefs = Preferences.Shared;
-        var gif = await GifExporter.ExportAsync(videoPath, prefs.GifFps, prefs.GifWidth);
-        if (gif != null) CaptureLibrary.Shared.Reload();
-        else RecBadge.Show(RecStrings.GifFailed, RecBadge.GlyphWarning);
     }
 
     // MARK: helpers
@@ -325,13 +326,20 @@ public sealed class RecordingManager
     }
 
     /// Dispose may block until the capture threads exit; never on the UI thread, never inside one of
-    /// the recorder's own callbacks.
-    private static Task DisposeRecorder(Recorder rec, bool stopFirst) =>
-        Task.Run(() =>
+    /// the recorder's own callbacks. With `after`, it waits for that Stop() to return: if it never
+    /// does (driver stall), the recorder is leaked rather than torn down under it.
+    private static Task DisposeRecorder(Recorder rec, bool stopFirst, Task? after = null)
+    {
+        void Teardown()
         {
             try { if (stopFirst) rec.Stop(); } catch { /* already stopped */ }
             try { rec.Dispose(); } catch (Exception ex) { Log("dispose", ex); }
-        });
+        }
+        return after == null
+            ? Task.Run(Teardown)
+            : after.ContinueWith(_ => Teardown(), CancellationToken.None,
+                TaskContinuationOptions.DenyChildAttach, TaskScheduler.Default);
+    }
 
     private static long FileLength(string path)
     {
@@ -375,4 +383,7 @@ public static class VideoTrimmer
 {
     /// Opens the trim editor window for a recording (twin of the image editor).
     public static void Open(string videoPath) => VideoTrimmerWindow.Open(videoPath);
+
+    /// Closes the trim window open on any of these files (UI thread). Used before recycling them.
+    public static void CloseFor(System.Collections.Generic.IEnumerable<string> paths) => VideoTrimmerWindow.CloseFor(paths);
 }

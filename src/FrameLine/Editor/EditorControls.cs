@@ -42,7 +42,7 @@ internal sealed class EditorToolButton : DrawnButton
 {
     private readonly EditorIcon? _icon;
     private readonly double _iconSize;
-    private readonly string? _text;
+    private string? _text;
     private readonly double _fontSize;
     private readonly FontWeight _weight;
     private readonly bool _flexibleWidth;
@@ -66,6 +66,20 @@ internal sealed class EditorToolButton : DrawnButton
         _flexibleWidth = fixedWidth == null;
         if (fixedWidth is { } w) Width = w;
         Height = side;
+    }
+
+    /// Label of a text button; changing it re-measures (the "Fit" width follows the language).
+    public string? Label
+    {
+        get => _text;
+        set
+        {
+            if (_text == null || value == null || value == _text) return;
+            _text = value;
+            _textCache = null;
+            InvalidateMeasure();
+            InvalidateVisual();
+        }
     }
 
     public bool IsSelectedTool
@@ -167,15 +181,30 @@ internal sealed class EditorPillButton : DrawnButton
     private const double IconSize = 12, Gap = 5, PadX = 12;
     private readonly EditorIcon _icon;
     private readonly bool _primary;
-    private readonly FormattedText _label;
+    private string _title;
+    private FormattedText _label;
 
     public EditorPillButton(string title, EditorIcon icon, bool primary)
     {
         _icon = icon;
         _primary = primary;
+        _title = title;
         _label = Text(title, 12, FontWeights.SemiBold, Fg);
         Height = 27;
         ToolTip = null;
+    }
+
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            if (value == _title) return;
+            _title = value;
+            _label = Text(value, 12, FontWeights.SemiBold, Fg);
+            InvalidateMeasure();
+            InvalidateVisual();
+        }
     }
 
     private Color Fg => _primary ? Colors.Black : EditorPalette.White(0.92);

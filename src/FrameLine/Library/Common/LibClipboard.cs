@@ -27,7 +27,8 @@ internal static class LibClipboard
     public static bool CopyImage(BitmapSource img, byte[]? png = null)
     {
         var data = new DataObject();
-        data.SetImage(img);
+        // CF_DIB consumers ignore alpha: flatten onto white there, keep alpha in PNG.
+        data.SetImage(FrameLine.Shell.ClipboardImage.Opaque(img));
         try { data.SetData("PNG", new MemoryStream(png ?? LibImages.EncodePng(img)), false); } catch { }
         return Set(data);
     }

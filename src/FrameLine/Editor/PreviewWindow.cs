@@ -23,7 +23,11 @@ internal sealed class PreviewWindow : Window
         _contentW = Math.Max(760, pw * scale);
         _contentH = Math.Max(360, ph * scale) + ChromeV;
 
-        Title = EditorText.WindowTitle(System.IO.Path.GetFileName(path));
+        ApplyTitle();
+        // FilePath can change (non-PNG/JPEG saved as .png), so the title is rebuilt from it.
+        Action onLanguage = () => Dispatcher.BeginInvoke(ApplyTitle);
+        FrameLine.Core.I18n.Shared.LanguageChanged += onLanguage;
+        Closed += (_, _) => FrameLine.Core.I18n.Shared.LanguageChanged -= onLanguage;
         Content = _editor;
         Background = EditorPalette.Brush(EditorPalette.Ink);
         Topmost = true;                       // NSWindow.Level.floating
@@ -43,6 +47,8 @@ internal sealed class PreviewWindow : Window
         };
         Loaded += (_, _) => Keyboard.Focus(_editor);
     }
+
+    private void ApplyTitle() => Title = EditorText.WindowTitle(System.IO.Path.GetFileName(_editor.FilePath));
 
     private void TrySetIcon()
     {

@@ -5,6 +5,7 @@ namespace FrameLine.Recording;
 
 internal static class RecNative
 {
+    public const uint MONITOR_DEFAULTTOPRIMARY = 1;
     public const uint MONITOR_DEFAULTTONEAREST = 2;
     public const int GWL_EXSTYLE = -20;
     public const long WS_EX_TOOLWINDOW = 0x00000080;
@@ -63,11 +64,17 @@ internal static class RecNative
         return GetCursorPos(out var pt) && TryGetMonitorAt(pt, out deviceName, out bounds, out work);
     }
 
+    /// The primary monitor (taskbar with the clock; its origin is always 0,0), the Windows
+    /// counterpart of CGMainDisplayID.
+    public static bool TryGetPrimaryMonitor(out string deviceName, out RECT bounds, out RECT work) =>
+        TryGetMonitorAt(new POINT(), out deviceName, out bounds, out work, MONITOR_DEFAULTTOPRIMARY);
+
     /// Same, for the monitor containing (or nearest to) a physical virtual-screen point.
-    public static bool TryGetMonitorAt(POINT pt, out string deviceName, out RECT bounds, out RECT work)
+    public static bool TryGetMonitorAt(POINT pt, out string deviceName, out RECT bounds, out RECT work,
+        uint fallback = MONITOR_DEFAULTTONEAREST)
     {
         deviceName = ""; bounds = default; work = default;
-        var mon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+        var mon = MonitorFromPoint(pt, fallback);
         if (mon == IntPtr.Zero) return false;
         var info = new MONITORINFOEX { cbSize = Marshal.SizeOf<MONITORINFOEX>() };
         if (!GetMonitorInfoW(mon, ref info)) return false;
