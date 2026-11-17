@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>FrameLine</RootNamespace>
+    <AssemblyName>FrameLine</AssemblyName>
+    <ApplicationIcon>Assets\FrameLine.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.1</Version>
+    <Product>FrameLine</Product>
+    <Company>SAASEmpire</Company>
+    <Copyright>© SAAS Empire</Copyright>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <SelfContained>true</SelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WFAC010 is a WinForms analyzer: it wants DPI set through Application.SetHighDpiMode, which
+         WinForms-only apps have. FrameLine is a WPF app (WinForms only hosts NotifyIcon), so per-monitor
+         v2 awareness must come from app.manifest before the first window exists. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FrameLine.Core\FrameLine.Core.csproj" />
+    <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+  <!-- ScreenRecorderLib is a mixed-mode C++/CLI assembly: the loader maps it with LoadLibrary, so it
+       cannot run from inside a single-file bundle. Publish it as a file next to FrameLine.exe. -->
+  <Target Name="KeepScreenRecorderLibBesideExe" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Update="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'ScreenRecorderLib'" ExcludeFromSingleFile="true" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <Resource Include="Assets\*.png;Assets\*.ico" />
+    <Content Include="Assets\CaptureSound.wav" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
