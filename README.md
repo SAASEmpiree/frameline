@@ -105,11 +105,12 @@ tests/                    # MCP unit and loopback integration tests
 frameline-logo/           # logo set: png, icns, svg, menu-bar templates
 BRIDGESHOT_PARITY.md      # feature parity backlog
 app.json                  # manifest read by the tap's ship tool
+windows/                  # the Windows port: C# .NET 8 + WPF, see windows/README.md
 ```
 
 ## 🚢 Release
 
-Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>`, publishes the build on the tap and attaches the same zip as `FrameLine-macOS.zip` to this repo's latest release (the download button above). The Windows build (`FrameLine-Windows.zip`) is carried over to each new release until a newer Windows build replaces it. See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
+Installing FrameLine runs the tap's sync, which pushes `main`, tags `v<version>`, publishes the build on the tap and attaches the same zip as `FrameLine-macOS.zip` to this repo's latest release (the download button above). The Windows build (`FrameLine-Windows.zip`) is carried over to each new release until a newer Windows build replaces it: build it with `windows/scripts/publish.sh` (works from macOS) and upload `windows/dist/FrameLine-<version>-win-x64.zip` as `FrameLine-Windows.zip`. See [homebrew-tap/tools](https://github.com/SAASEmpiree/homebrew-tap/tree/main/tools).
 
 ## 📄 License
 

@@ -5,6 +5,11 @@ Native macOS menu-bar screenshot and screen-recording app (Swift Package, AppKit
 capture, ScreenCaptureKit recording with system audio + mic (macOS 15+), quick preview, annotation
 editor, video trimmer, OCR, pinned shots, history. 100% local. UI in 10 languages (`Strings.swift`).
 
+## Windows port
+
+`windows/` holds the Windows version (C# .NET 8 + WPF), imported with its history from the former
+`FrameLine-Windows` repo. It has its own `windows/CLAUDE.md`; read it before touching that folder.
+
 ## Build
 
 - `./scripts/build_app.sh` → `build/FrameLine.app` (`swift build -c release`, hardened runtime).

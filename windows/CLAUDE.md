@@ -1,6 +1,6 @@
 # FrameLine for Windows
 
-Windows port of FrameLine (macOS, Swift, `~/Documents/SAASEmpiree/FrameLine`). C# .NET 8 + WPF.
+Windows port of FrameLine, in the `windows/` folder of the same repo as the macOS app (Swift, repo root). Every command below runs from `windows/`. C# .NET 8 + WPF.
 Read `docs/ARCHITECTURE.md` first: stack, macOS→Windows mapping, module owners, build commands.
 
 - Build from macOS: `dotnet build src/FrameLine -c Release -p:Platform=x64` (needs `EnableWindowsTargeting`, already set). The app cannot run on macOS.
