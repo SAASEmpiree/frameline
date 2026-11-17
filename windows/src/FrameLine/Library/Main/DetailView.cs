@@ -315,7 +315,7 @@ internal sealed class CapturePill : Border
     private readonly ScaleTransform _scale = new(1, 1);
     private bool _hover, _pressed;
 
-    public CapturePill(string glyph, string title, string[] keys, bool highlighted, Action action)
+    public CapturePill(string glyph, string title, IReadOnlyList<string> keys, bool highlighted, Action action)
     {
         _highlighted = highlighted;
         CornerRadius = new CornerRadius(18);

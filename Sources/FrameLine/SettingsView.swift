@@ -16,6 +16,7 @@ let ES_SETTINGS_TABS: [(id: String, key: String, symbol: String)] = [
     ("general",   "tab_general",    "gearshape"),
     ("capture",   "sec_capture",    "camera.viewfinder"),
     ("recording", "sec_recording",  "record.circle"),
+    ("shortcuts", "tab_shortcuts",  "keyboard"),
     ("about",     "tab_about",      "info.circle"),
 ]
 
@@ -29,6 +30,7 @@ struct SettingsView: View {
             switch tab {
             case "capture":   CapturePane()
             case "recording": RecordingPane()
+            case "shortcuts": ShortcutsPane()
             case "about":     AboutPane()
             default:          GeneralPane()
             }

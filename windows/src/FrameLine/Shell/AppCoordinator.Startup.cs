@@ -109,7 +109,8 @@ public sealed partial class AppCoordinator
         EventManager.RegisterClassHandler(typeof(Window), UIElement.PreviewKeyDownEvent,
             new KeyEventHandler((_, e) =>
             {
-                if (Keyboard.Modifiers != ModifierKeys.Control) return;
+                // A Settings shortcut recorder takes every key, Ctrl+Q included.
+                if (Keyboard.Modifiers != ModifierKeys.Control || ShortcutRecorder.IsRecording) return;
                 var key = e.Key == Key.System ? e.SystemKey : e.Key;
                 if (key == Key.OemComma) { e.Handled = true; OpenPreferences(); }
                 else if (key == Key.Q) { e.Handled = true; Quit(); }

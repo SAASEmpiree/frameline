@@ -109,9 +109,9 @@ internal static class LibText
         return Fmt("lib_rel_year", s / (365 * 86400));
     }
 
-    // Hotkeys are fixed VK codes on Windows (RegisterHotKey), so labels never depend on the layout.
-    public static readonly string[] RegionKeys = { "Ctrl", "Shift", "4" };
-    public static readonly string[] WindowKeys = { "Ctrl", "Shift", "8" };
-    public static readonly string[] FullScreenKeys = { "Ctrl", "Shift", "9" };
-    public static string RegionLabel => string.Join("+", RegionKeys);
+    // The current shortcuts (Settings > Shortcuts); LibraryWindow relabels on ShortcutsChanged.
+    public static IReadOnlyList<string> RegionKeys => FrameLine.Shell.CaptureHotkey.Keys(FrameLine.Shell.CaptureHotkey.Region);
+    public static IReadOnlyList<string> WindowKeys => FrameLine.Shell.CaptureHotkey.Keys(FrameLine.Shell.CaptureHotkey.Window);
+    public static IReadOnlyList<string> FullScreenKeys => FrameLine.Shell.CaptureHotkey.Keys(FrameLine.Shell.CaptureHotkey.FullScreen);
+    public static string RegionLabel => FrameLine.Shell.CaptureHotkey.Label(FrameLine.Shell.CaptureHotkey.Region);
 }

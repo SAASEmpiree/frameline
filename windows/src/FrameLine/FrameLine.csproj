@@ -13,7 +13,7 @@
     <AssemblyName>FrameLine</AssemblyName>
     <ApplicationIcon>Assets\FrameLine.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Product>FrameLine</Product>
     <Company>SAASEmpire</Company>
     <Copyright>© SAAS Empire</Copyright>

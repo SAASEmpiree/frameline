@@ -108,6 +108,17 @@ public sealed class Preferences
     /// "system" or a code from I18n.SupportedLanguages.
     public string DisplayLanguage { get => GetString(K.DisplayLanguage, "system"); set => SetValue(K.DisplayLanguage, value, nameof(DisplayLanguage)); }
 
+    /// JSON key of an action's shortcut: hotkeyRegion, hotkeyWindow, hotkeyFullScreen, hotkeyRecord.
+    public static string HotkeyKey(HotkeyAction action) => "hotkey" + action;
+
+    /// The action's global shortcut; a missing or unreadable value reads as the default.
+    public HotkeySpec GetHotkey(HotkeyAction action) =>
+        HotkeySpec.TryParse(GetString(HotkeyKey(action), ""), out var spec) ? spec : HotkeySpec.Default(action);
+
+    /// Changed is raised with the JSON key (e.g. "hotkeyRegion").
+    public void SetHotkey(HotkeyAction action, HotkeySpec spec) =>
+        SetValue(HotkeyKey(action), spec.Serialize(), HotkeyKey(action));
+
     /// Raised after a property value actually changes, with the C# property name (or the raw key for
     /// SetCustom). Raised on the writing thread, outside the lock.
     public event Action<string>? Changed;

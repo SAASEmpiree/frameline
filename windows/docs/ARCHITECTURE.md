@@ -28,7 +28,7 @@ Release: `scripts/publish.sh` (single-file self-contained `dist/FrameLine/FrameL
 | macOS | Windows |
 |---|---|
 | menu bar item (`StatusBarController`) | tray icon (`NotifyIcon`) + WPF-styled context menu; left click = same as mac click |
-| ⇧⌘4 / ⇧⌘8 / ⇧⌘9 / ⇧⌘E | **Ctrl+Shift+4 / 8 / 9 / E** via `RegisterHotKey` on VK codes (layout-independent, works on AZERTY) |
+| ⇧⌘4 / ⇧⌘8 / ⇧⌘9 / ⇧⌘E | **Ctrl+Shift+4 / 8 / 9 / E** by default, via `RegisterHotKey` on VK codes (layout-independent, works on AZERTY). Changeable in Settings > Shortcuts (`ShortcutRecorder`, rules in Core `HotkeyRules`, saved as `hotkeyRegion`/`hotkeyWindow`/`hotkeyFullScreen`/`hotkeyRecord` = `"Ctrl+Shift+0x34"`); Ctrl, Alt or Win required except F1-F24 and Print Screen |
 | ScreenCaptureKit screenshot | GDI `BitBlt` from the desktop DC over the virtual screen, per-monitor DPI v2 aware |
 | `screencapture -i -w` window pick | own overlay: hover highlights the top-level window under the cursor (`DwmGetWindowAttribute` EXTENDED_FRAME_BOUNDS), click captures it (`PrintWindow` PW_RENDERFULLCONTENT, fallback BitBlt); `WindowShadow` adds a soft drop shadow like macOS |
 | `RegionSelectOverlay` + loupe | one borderless topmost WPF window per monitor (or one over the virtual screen), frozen screenshot as background, loupe + pixel colour, Esc cancels |

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FrameLine.Core;
 
 namespace FrameLine.Shell;
 
@@ -126,10 +127,8 @@ internal sealed class OnboardingSteps
     {
         var s = Stack(18);
         s.Children.Add(IconTile("\uE765"));
-        // The macOS copy also says "Change them anytime in Settings → Hotkeys", but neither app has
-        // that tab and the shortcuts are fixed, so the sentence is dropped rather than ported.
         s.Children.Add(Heading("Set up your shortcuts",
-            "FrameLine answers the classic screenshot keys out of the box."));
+            "FrameLine answers the classic screenshot keys out of the box. Change them anytime in Settings → Shortcuts."));
         var rows = Stack(12);
         rows.Margin = new Thickness(0, 2, 0, 0);
         rows.Children.Add(ShortcutRow("\uE7A8", "Capture Area", CaptureHotkey.Region));
@@ -246,7 +245,7 @@ internal sealed class OnboardingSteps
         return row;
     }
 
-    private static FrameworkElement ShortcutRow(string glyph, string title, uint vk)
+    private static FrameworkElement ShortcutRow(string glyph, string title, HotkeySpec spec)
     {
         var row = new Grid();
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(36) });
@@ -257,7 +256,7 @@ internal sealed class OnboardingSteps
         Grid.SetColumn(label, 1);
         row.Children.Add(label);
         var keys = new StackPanel { Orientation = Orientation.Horizontal };
-        foreach (var k in CaptureHotkey.Keys(vk)) keys.Children.Add(Keycap(k));
+        foreach (var k in CaptureHotkey.Keys(spec)) keys.Children.Add(Keycap(k));
         Grid.SetColumn(keys, 2);
         row.Children.Add(keys);
         return Raised(row, new Thickness(14, 5, 14, 5));

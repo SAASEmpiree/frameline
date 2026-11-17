@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 namespace FrameLine.Shell;
 
-/// The four Settings panes (SettingsView.swift), built in code so a language change simply
+/// The Settings panes (SettingsView.swift, plus Shortcuts), built in code so a language change simply
 /// rebuilds them. Every control writes Preferences directly, like the macOS @AppStorage bindings.
 internal sealed class SettingsPanes
 {
@@ -234,6 +234,61 @@ internal sealed class SettingsPanes
         var panel = new StackPanel();
         panel.Children.Add(text);
         panel.Children.Add(open);
+        return panel;
+    }
+
+    // MARK: - Shortcuts (the four global shortcuts, recorded in place)
+
+    public UIElement ShortcutsPane()
+    {
+        _rebuildCurrent = null;
+        var rows = new List<UIElement>();
+        foreach (var action in Enum.GetValues<HotkeyAction>()) rows.Add(ShortcutRow(action));
+
+        var reset = ButtonFor(Tr.L("hk_reset", "Restore default shortcuts"), () =>
+        {
+            // A default another app owns keeps the current shortcut; its row then says so.
+            Write(() => HotKeyManager.Shared.ResetToDefaults());
+            Swap(ShortcutsPane);
+        });
+        reset.HorizontalAlignment = HorizontalAlignment.Left;
+        reset.Margin = new Thickness(0, 12, 0, 0);
+
+        var root = new StackPanel();
+        var section = (StackPanel)Section(Tr.L("tab_shortcuts", "Shortcuts"), rows.ToArray());
+        section.Children.Add(new TextBlock { Text = Tr.L("hk_help"), Style = (Style)_owner.FindResource("FL.FooterText") });
+        root.Children.Add(section);
+        root.Children.Add(reset);
+        _rebuildCurrent = () => Swap(ShortcutsPane);
+        return root;
+    }
+
+    private UIElement ShortcutRow(HotkeyAction action)
+    {
+        var error = new TextBlock { TextWrapping = TextWrapping.Wrap, FontSize = 12, Margin = new Thickness(0, 0, 0, 6), Visibility = Visibility.Collapsed };
+        error.SetResourceReference(TextBlock.ForegroundProperty, "FL.Danger");
+        void ShowError(string? text)
+        {
+            error.Text = text ?? "";
+            error.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        var recorder = new ShortcutRecorder(() => CaptureHotkey.Get(action), spec =>
+        {
+            var check = HotkeyRules.Validate(action, spec, CaptureHotkey.Get, out var other);
+            if (check == HotkeyValidation.NeedsModifier) { ShowError(Tr.L("hk_need_modifier")); return; }
+            if (check == HotkeyValidation.UsedByOtherAction) { ShowError(Tr.F("hk_in_use_frameline", CaptureHotkey.ActionTitle(other))); return; }
+            bool ok = false;
+            Write(() => ok = HotKeyManager.Shared.TrySet(action, spec));
+            ShowError(ok ? null : Tr.L("hk_in_use_other"));
+        });
+        recorder.Style = (Style)_owner.FindResource("FL.Button");
+        // A shortcut another app took before FrameLine started is flagged from the start.
+        if (!HotKeyManager.Shared.IsActive(action)) ShowError(Tr.L("hk_in_use_other"));
+
+        var panel = new StackPanel();
+        panel.Children.Add(LabeledRow(CaptureHotkey.ActionTitle(action), recorder));
+        panel.Children.Add(error);
         return panel;
     }
 

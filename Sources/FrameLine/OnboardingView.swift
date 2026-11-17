@@ -9,6 +9,7 @@ struct OnboardingView: View {
     let onStartCapture: () -> Void    // « Take Your First Screenshot » → ferme + lance une capture zone
 
     @State private var step = 0
+    @ObservedObject private var hotkeys = HotkeyStore.shared
     @State private var hasPermission = Permissions.hasScreenRecording()
     @State private var launchAtLogin = Preferences.shared.launchAtLogin
     private let permTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -191,7 +192,7 @@ struct OnboardingView: View {
             iconTile("keyboard")
             VStack(alignment: .leading, spacing: 8) {
                 Text("Set up your shortcuts").font(.system(size: 21, weight: .bold))
-                Text("FrameLine answers the classic screenshot keys out of the box. Change them anytime in Settings → Hotkeys.")
+                Text("FrameLine answers the classic screenshot keys out of the box. Change them anytime in Settings → Shortcuts.")
                     .font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.46))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -307,13 +308,13 @@ struct OnboardingView: View {
         }
     }
 
-    private func shortcutRow(_ icon: String, _ title: String, _ keyCode: Int) -> some View {
+    private func shortcutRow(_ icon: String, _ title: String, _ hotkey: Hotkey) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(.white.opacity(0.9)).frame(width: 24)
             Text(title).font(.system(size: 13, weight: .semibold))
             Spacer()
             HStack(spacing: 4) {
-                ForEach(Array(CaptureHotkey.keys(for: keyCode).enumerated()), id: \.offset) { _, k in
+                ForEach(Array(CaptureHotkey.keys(for: hotkey).enumerated()), id: \.offset) { _, k in
                     Keycap(k)
                 }
             }

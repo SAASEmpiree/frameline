@@ -177,6 +177,7 @@ internal sealed class LibraryWindow : Window
         ThemeManager.Attach(this);
         ThemeManager.Changed += OnThemeChanged;
         FrameLine.Core.I18n.Shared.LanguageChanged += OnLanguageChanged;
+        FrameLine.Shell.CaptureHotkey.ShortcutsChanged += OnLanguageChanged;   // keycaps of the empty states
         LibraryModel.Shared.AddClockUser();
 
         SourceInitialized += (_, _) => RestorePlacement();
@@ -189,6 +190,7 @@ internal sealed class LibraryWindow : Window
         {
             ThemeManager.Changed -= OnThemeChanged;
             FrameLine.Core.I18n.Shared.LanguageChanged -= OnLanguageChanged;
+            FrameLine.Shell.CaptureHotkey.ShortcutsChanged -= OnLanguageChanged;
             LibraryModel.Shared.RemoveClockUser();
             _sidebar.Detach();
             _detail.Detach();

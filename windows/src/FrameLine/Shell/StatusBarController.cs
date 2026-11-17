@@ -53,6 +53,7 @@ public sealed class StatusBarController : IDisposable
         Current = this;
 
         I18n.Shared.LanguageChanged += () => Ui(() => { BuildMenu(); _tray.Text = Tooltip(); });
+        CaptureHotkey.ShortcutsChanged += () => Ui(BuildMenu);     // shortcut hints follow Settings > Shortcuts
         RecordingManager.Shared.StateChanged += () => Ui(UpdateRecordState);
         ThemeManager.SystemThemeChanged += RebuildIcons;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += (_, _) => Ui(RebuildIcons);

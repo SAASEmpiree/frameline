@@ -127,7 +127,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showUpToDate() { esShowUpToDate() }
 
     private func registerHotKeys() {
-        HotKeyManager.shared.registerDefaults(
+        HotKeyManager.shared.register(
             region: { [weak self] in self?.doRegion() },
             window: { [weak self] in self?.doWindow() },
             full:   { [weak self] in self?.doFull() },

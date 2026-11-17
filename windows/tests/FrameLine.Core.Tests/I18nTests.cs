@@ -92,10 +92,10 @@ public class I18nTests
     {
         // Strings.swift: en 72, fr 72, every other language 54; + 4 Windows-only keys each, + 151
         // strings the macOS app hard-coded outside the table, + the 10 MCP keys (en/fr only in the
-        // source) translated in every language.
-        var expected = new Dictionary<string, int> { ["en"] = 76 + 151, ["fr"] = 76 + 151 };
+        // source) translated in every language, + the 8 Settings > Shortcuts keys (tab_shortcuts, hk_*).
+        var expected = new Dictionary<string, int> { ["en"] = 76 + 151 + 8, ["fr"] = 76 + 151 + 8 };
         foreach (var lang in I18n.SupportedLanguages)
-            Assert.Equal(expected.GetValueOrDefault(lang, 58 + 151 + 10), Strings.Table[lang].Count);
+            Assert.Equal(expected.GetValueOrDefault(lang, 58 + 151 + 10 + 8), Strings.Table[lang].Count);
     }
 
     // The macOS sound names (snd_grab, snd_beginRecord…) match no Windows sound id, so the app

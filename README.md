@@ -35,7 +35,7 @@ FrameLine takes screenshots and records your screen from the menu bar. Press a s
 - 🔤 **Copy text (OCR)** — Apple Vision reads the text in a capture and puts it on the clipboard.
 - 📌 **Pin to screen** — keep a capture floating above your windows, or pin the image on your clipboard.
 - 🗂️ **History & library** — recent captures in a floating panel, every capture in one window.
-- ⌨️ **Global shortcuts** — **⇧⌘4** area, **⇧⌘8** window, **⇧⌘9** full screen, **⇧⌘E** record (physical keys, so they work on AZERTY too).
+- ⌨️ **Global shortcuts** — **⇧⌘4** area, **⇧⌘8** window, **⇧⌘9** full screen, **⇧⌘E** record by default (physical keys, so they work on AZERTY too). Change any of them in **Settings → Shortcuts**.
 - 🗣️ **UI in 10 languages** — switch the display language live; light, dark or system theme.
 - 🤖 **Local MCP server** — Claude Code, Cursor or Coucou can take screenshots, record the screen and read your captures (127.0.0.1 only, secret token, can be turned off in Settings).
 - 🔔 **Capture sounds**, PNG or JPG output, copy-to-clipboard and open-in-editor after capture, launch at login.
@@ -58,7 +58,7 @@ A **FrameLine icon** appears in the menu bar and the setup guide walks you throu
 
 ### 🪟 Windows (beta)
 
-The same app for Windows 10 (version 2004 or later) and Windows 11, x64. Shortcuts are **Ctrl+Shift+4** area, **Ctrl+Shift+8** window, **Ctrl+Shift+9** full screen, **Ctrl+Shift+E** record; FrameLine lives in the notification area (system tray).
+The same app for Windows 10 (version 2004 or later) and Windows 11, x64. Default shortcuts are **Ctrl+Shift+4** area, **Ctrl+Shift+8** window, **Ctrl+Shift+9** full screen, **Ctrl+Shift+E** record (change them in **Settings → Shortcuts**); FrameLine lives in the notification area (system tray).
 
 1. Download [**FrameLine-Windows.zip**](https://github.com/SAASEmpiree/frameline/releases/latest/download/FrameLine-Windows.zip) (always the latest version).
 2. Right-click the zip → **Extract All**, then open the **FrameLine** folder and run **FrameLine.exe**. Keep the files of that folder together.

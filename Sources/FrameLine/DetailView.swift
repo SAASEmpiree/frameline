@@ -30,6 +30,7 @@ struct DetailView: View {
 
 private struct EmptyStateView: View {
     @EnvironmentObject var coord: AppCoordinator
+    @ObservedObject private var hotkeys = HotkeyStore.shared   // redessine les pastilles si un raccourci change
     var hasCaptures = false
     var body: some View {
         VStack(spacing: 0) {

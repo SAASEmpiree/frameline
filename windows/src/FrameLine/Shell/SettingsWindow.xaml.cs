@@ -11,7 +11,7 @@ using FrameLine.Platform;
 namespace FrameLine.Shell;
 
 /// Port of PreferencesWindowController.swift + SettingsView.swift: a preference toolbar (icon over
-/// label) with 4 short tabs (General, Capture, Recording, About). Like the macOS window, it follows
+/// label) with 5 short tabs (General, Capture, Recording, Shortcuts, About). Like the macOS window, it follows
 /// the SYSTEM light/dark mode, not the app theme, and relabels itself live when the display
 /// language changes.
 public partial class SettingsWindow : Window
@@ -24,6 +24,7 @@ public partial class SettingsWindow : Window
         ("general", "tab_general", "\uE713"),
         ("capture", "sec_capture", "\uE722"),
         ("recording", "sec_recording", "\uE7C8"),
+        ("shortcuts", "tab_shortcuts", "\uE765"),
         ("about", "tab_about", "\uE946"),
     };
 
@@ -140,6 +141,7 @@ public partial class SettingsWindow : Window
         {
             "capture" => _panes.CapturePane(),
             "recording" => _panes.RecordingPane(),
+            "shortcuts" => _panes.ShortcutsPane(),
             "about" => _panes.AboutPane(),
             _ => _panes.GeneralPane(),
         };

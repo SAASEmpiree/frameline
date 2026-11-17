@@ -8,6 +8,7 @@ import ImageIO
 struct SidebarView: View {
     @EnvironmentObject var coord: AppCoordinator
     @EnvironmentObject var library: CaptureLibrary
+    @ObservedObject private var hotkeys = HotkeyStore.shared   // le texte vide cite le raccourci courant
     @Environment(\.colorScheme) private var scheme
 
     /// Gris OPAQUE de la sidebar (façon BridgeShot). Appliqué via une NSView opaque (cf.

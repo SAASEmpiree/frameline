@@ -43,11 +43,13 @@ final class StatusBarController: NSObject, NSMenuItemValidation {
                                                name: .recordingStateChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(rebuildMenu),
                                                name: .displayLanguageChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(rebuildMenu),
+                                               name: .hotkeysChanged, object: nil)
     }
 
     // MARK: - Construction du menu
 
-    /// Reconstruit le menu dans la langue d'affichage courante (appelé au changement de langue).
+    /// Reconstruit le menu (changement de langue ou de raccourci dans les Réglages).
     @objc private func rebuildMenu() { buildMenu() }
 
     private func buildMenu() {
@@ -127,11 +129,11 @@ final class StatusBarController: NSObject, NSMenuItemValidation {
     /// reste assuré par HotKeyManager (raccourcis globaux Carbon).
     @discardableResult
     private func addItem(_ title: String, _ sym: String, _ sel: Selector,
-                         key: Int? = nil, hint: String? = nil) -> NSMenuItem {
+                         key: Hotkey? = nil, hint: String? = nil) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: sel, keyEquivalent: "")
         item.target = self
         item.image = symbol(sym)
-        // `hint` explicite (⌘,) OU dérivé d'un keyCode de capture (⇧⌘' via la disposition active).
+        // `hint` explicite (⌘,) OU dérivé d'un raccourci de capture (⇧⌘' via la disposition active).
         if let hintText = hint ?? key.map({ CaptureHotkey.label(for: $0) }) {
             item.attributedTitle = shortcutTitle(title, hintText)
         }

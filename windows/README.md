@@ -35,7 +35,7 @@ It is a port of the macOS app, feature for feature and string for string: same m
 - 🔤 **Copy text (OCR)** — Windows OCR reads the text in a capture and puts it on the clipboard.
 - 📌 **Pin to screen** — keep a capture floating above your windows, or pin the image on your clipboard.
 - 🗂️ **History & library** — recent captures in a floating panel, every capture in one window.
-- ⌨️ **Global shortcuts** — **Ctrl+Shift+4** area, **Ctrl+Shift+8** window, **Ctrl+Shift+9** full screen, **Ctrl+Shift+E** record (virtual keys, so they work on AZERTY too).
+- ⌨️ **Global shortcuts** — **Ctrl+Shift+4** area, **Ctrl+Shift+8** window, **Ctrl+Shift+9** full screen, **Ctrl+Shift+E** record by default (virtual keys, so they work on AZERTY too); change any of them in **Settings → Shortcuts**.
 - 🗣️ **UI in 10 languages** — switch the display language live; light, dark or system theme.
 - 🤖 **Local MCP server** — Claude Code, Cursor or Coucou can take screenshots, record the screen and read your captures (127.0.0.1 only, secret token in `%APPDATA%\FrameLine\mcp.json`, can be turned off in Settings).
 - 🔔 **Capture sounds**, PNG or JPG output, copy-to-clipboard and open-in-editor after capture, launch at login, `frameline://` links.
