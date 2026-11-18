@@ -1,7 +1,7 @@
 # FrameLine
 
 Native macOS menu-bar screenshot and screen-recording app (Swift Package, AppKit + SwiftUI), formerly
-"EasyScreen", modelled on BridgeShot (backlog in `BRIDGESHOT_PARITY.md`). Area / window / full-screen
+"EasyScreen", modelled on BridgeShot. Area / window / full-screen
 capture, ScreenCaptureKit recording with system audio + mic (macOS 15+), quick preview, annotation
 editor, video trimmer, OCR, pinned shots, history. 100% local. UI in 10 languages (`Strings.swift`).
 

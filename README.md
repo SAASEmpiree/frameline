@@ -103,7 +103,6 @@ Resources/                # Info.plist, AppIcon-1024.png, capture sound
 scripts/                  # build_app.sh, setup_signing.sh, make_icon.swift, test-mcp.sh, mcp-smoke.sh
 tests/                    # MCP unit and loopback integration tests
 frameline-logo/           # logo set: png, icns, svg, menu-bar templates
-BRIDGESHOT_PARITY.md      # feature parity backlog
 app.json                  # manifest read by the tap's ship tool
 windows/                  # the Windows port: C# .NET 8 + WPF, see windows/README.md
 ```
